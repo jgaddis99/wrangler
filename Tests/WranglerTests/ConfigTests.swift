@@ -60,4 +60,10 @@ final class ConfigTests: XCTestCase {
         XCTAssertTrue(shortcut.enabled)
         XCTAssertNil(shortcut.keyCombo)
     }
+
+    func testDefaultShortcutsHaveKeyCombos() {
+        let config = WranglerConfig()
+        let withCombos = config.shortcuts.filter { $0.keyCombo != nil }
+        XCTAssertEqual(withCombos.count, config.shortcuts.count, "All default shortcuts should have key combos")
+    }
 }

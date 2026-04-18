@@ -33,17 +33,20 @@ final class WindowManager {
             kAXFocusedApplicationAttribute as CFString,
             &focusedApp
         )
-        guard appResult == .success, let app = focusedApp else {
+        guard appResult == .success,
+              let app = focusedApp else {
             return .failure(.noFocusedWindow)
         }
+        let appElement = app as! AXUIElement
 
         var focusedWindow: CFTypeRef?
         let winResult = AXUIElementCopyAttributeValue(
-            app as! AXUIElement,
+            appElement,
             kAXFocusedWindowAttribute as CFString,
             &focusedWindow
         )
-        guard winResult == .success, let window = focusedWindow else {
+        guard winResult == .success,
+              let window = focusedWindow else {
             return .failure(.noFocusedWindow)
         }
 
@@ -81,8 +84,9 @@ final class WindowManager {
         var value: CFTypeRef?
         let result = AXUIElementCopyAttributeValue(window, kAXPositionAttribute as CFString, &value)
         guard result == .success, let val = value else { return nil }
+        let axValue = val as! AXValue
         var point = CGPoint.zero
-        AXValueGetValue(val as! AXValue, .cgPoint, &point)
+        AXValueGetValue(axValue, .cgPoint, &point)
         return point
     }
 
@@ -90,8 +94,9 @@ final class WindowManager {
         var value: CFTypeRef?
         let result = AXUIElementCopyAttributeValue(window, kAXSizeAttribute as CFString, &value)
         guard result == .success, let val = value else { return nil }
+        let axValue = val as! AXValue
         var size = CGSize.zero
-        AXValueGetValue(val as! AXValue, .cgSize, &size)
+        AXValueGetValue(axValue, .cgSize, &size)
         return size
     }
 

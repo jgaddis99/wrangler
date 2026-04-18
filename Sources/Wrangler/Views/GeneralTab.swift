@@ -32,9 +32,13 @@ struct GeneralTab: View {
 
             Section("Menu Bar") {
                 Toggle("Hide menu bar icon", isOn: $configManager.config.general.hideMenuBarIcon)
+                    .disabled(true)
                     .onChange(of: configManager.config.general.hideMenuBarIcon) { _, _ in
                         configManager.save()
                     }
+                Text("Hiding the menu bar icon is disabled in v0.1 to prevent lockout.")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
             }
 
             Section("Accessibility") {

@@ -24,6 +24,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         engine.start(configManager: configManager)
 
+        let hasLaunchedKey = "hasLaunchedBefore"
+        if !UserDefaults.standard.bool(forKey: hasLaunchedKey) {
+            UserDefaults.standard.set(true, forKey: hasLaunchedKey)
+            // Open settings on first launch so user knows the app is running
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                NSApp.activate()
+                NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
+            }
+        }
+
         // Watch for config changes that affect menu bar visibility
         configManager.$config
             .map(\.general.hideMenuBarIcon)

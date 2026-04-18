@@ -159,6 +159,28 @@ final class GridCalculatorTests: XCTestCase {
         XCTAssertEqual(posR?.columnSpan, 2)
     }
 
+    // MARK: - 1x1 Grid Edge Case
+
+    func testOneByOneGridSnapLeft() {
+        let pos = GridCalculator.gridPosition(for: .snapLeft, gridColumns: 1, gridRows: 1)
+        XCTAssertNotNil(pos)
+        XCTAssertEqual(pos?.columnSpan, 1)
+        XCTAssertEqual(pos?.rowSpan, 1)
+    }
+
+    // MARK: - Out-of-Bounds Clamping
+
+    func testOutOfBoundsColumnClamped() {
+        let frame = GridCalculator.calculateFrame(
+            for: GridPosition(column: 10, row: 10, columnSpan: 5, rowSpan: 5),
+            in: CGRect(x: 0, y: 0, width: 1920, height: 1080),
+            gridColumns: 4, gridRows: 4, gap: 0
+        )
+        // Should clamp to valid range, not produce off-screen frame
+        XCTAssertTrue(frame.maxX <= 1920)
+        XCTAssertTrue(frame.maxY <= 1080)
+    }
+
     // MARK: - Center Calculation
 
     func testCenterFrame() {

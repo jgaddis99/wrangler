@@ -15,6 +15,15 @@ enum GridCalculator {
         gridRows: Int,
         gap: Int
     ) -> CGRect {
+        let gridColumns = max(1, gridColumns)
+        let gridRows = max(1, gridRows)
+        let gap = max(0, gap)
+        let position = GridPosition(
+            column: min(position.column, gridColumns - 1),
+            row: min(position.row, gridRows - 1),
+            columnSpan: min(position.columnSpan, gridColumns - min(position.column, gridColumns - 1)),
+            rowSpan: min(position.rowSpan, gridRows - min(position.row, gridRows - 1))
+        )
         let gapF = CGFloat(gap)
         let totalGapX = gapF * CGFloat(gridColumns - 1)
         let totalGapY = gapF * CGFloat(gridRows - 1)
@@ -34,8 +43,8 @@ enum GridCalculator {
         gridColumns: Int,
         gridRows: Int
     ) -> GridPosition? {
-        let halfCols = gridColumns / 2
-        let halfRows = gridRows / 2
+        let halfCols = max(1, gridColumns / 2)
+        let halfRows = max(1, gridRows / 2)
 
         switch action {
         case .snapLeft:
