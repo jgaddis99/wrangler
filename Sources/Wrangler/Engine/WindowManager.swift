@@ -33,24 +33,25 @@ final class WindowManager {
             kAXFocusedApplicationAttribute as CFString,
             &focusedApp
         )
-        guard appResult == .success,
-              let app = focusedApp else {
+        guard appResult == .success, let focusedApp else {
             return .failure(.noFocusedWindow)
         }
-        let appElement = app as! AXUIElement
+        // CFTypeRef → AXUIElement: nil already excluded; cast is safe for CF types
+        let app = unsafeBitCast(focusedApp, to: AXUIElement.self)
 
         var focusedWindow: CFTypeRef?
         let winResult = AXUIElementCopyAttributeValue(
-            appElement,
+            app,
             kAXFocusedWindowAttribute as CFString,
             &focusedWindow
         )
-        guard winResult == .success,
-              let window = focusedWindow else {
+        guard winResult == .success, let focusedWindow else {
             return .failure(.noFocusedWindow)
         }
+        // CFTypeRef → AXUIElement: nil already excluded; cast is safe for CF types
+        let window = unsafeBitCast(focusedWindow, to: AXUIElement.self)
 
-        return .success(window as! AXUIElement)
+        return .success(window)
     }
 
     func getWindowFrame(_ window: AXUIElement) -> CGRect? {
@@ -84,7 +85,8 @@ final class WindowManager {
         var value: CFTypeRef?
         let result = AXUIElementCopyAttributeValue(window, kAXPositionAttribute as CFString, &value)
         guard result == .success, let val = value else { return nil }
-        let axValue = val as! AXValue
+        // CFTypeRef → AXValue: nil already excluded; cast is safe for CF types
+        let axValue = unsafeBitCast(val, to: AXValue.self)
         var point = CGPoint.zero
         AXValueGetValue(axValue, .cgPoint, &point)
         return point
@@ -94,7 +96,8 @@ final class WindowManager {
         var value: CFTypeRef?
         let result = AXUIElementCopyAttributeValue(window, kAXSizeAttribute as CFString, &value)
         guard result == .success, let val = value else { return nil }
-        let axValue = val as! AXValue
+        // CFTypeRef → AXValue: nil already excluded; cast is safe for CF types
+        let axValue = unsafeBitCast(val, to: AXValue.self)
         var size = CGSize.zero
         AXValueGetValue(axValue, .cgSize, &size)
         return size
