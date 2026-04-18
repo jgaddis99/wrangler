@@ -21,7 +21,7 @@ struct SettingsView: View {
                     Label("Displays", systemImage: "display.2")
                 }
 
-            Text("Shortcuts (coming next)")
+            ShortcutsTab(configManager: configManager)
                 .tabItem {
                     Label("Shortcuts", systemImage: "keyboard")
                 }
