@@ -16,7 +16,7 @@ struct SettingsView: View {
                     Label("General", systemImage: "gearshape")
                 }
 
-            Text("Displays (coming next)")
+            DisplaysTab(configManager: configManager, displayDetector: displayDetector)
                 .tabItem {
                     Label("Displays", systemImage: "display.2")
                 }
