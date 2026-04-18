@@ -1,0 +1,40 @@
+name: Wrangler
+options:
+  minimumXcodeGenVersion: "2.38"
+  deploymentTarget:
+    macOS: "14.0"
+  bundleIdPrefix: com.jasong
+  createIntermediateGroups: true
+  generateEmptyDirectories: true
+
+settings:
+  base:
+    SWIFT_VERSION: "5.10"
+
+targets:
+  Wrangler:
+    type: application
+    platform: macOS
+    sources:
+      - path: Sources/Wrangler
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.jasong.Wrangler
+        MARKETING_VERSION: "0.1.0"
+        CURRENT_PROJECT_VERSION: 1
+        CODE_SIGN_ENTITLEMENTS: ""
+        CODE_SIGN_IDENTITY: "-"
+        ENABLE_APP_SANDBOX: false
+        INFOPLIST_FILE: Sources/Wrangler/Info.plist
+  WranglerTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - path: Tests/WranglerTests
+    dependencies:
+      - target: Wrangler
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.jasong.WranglerTests
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/Wrangler.app/Contents/MacOS/Wrangler"
+        BUNDLE_LOADER: "$(TEST_HOST)"
