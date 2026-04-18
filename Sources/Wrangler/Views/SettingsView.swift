@@ -1,7 +1,7 @@
 // Sources/Wrangler/Views/SettingsView.swift
 //
-// Placeholder for the tabbed settings window.
-// Will be replaced with full implementation in Task 11.
+// Main settings window with a tabbed interface for General,
+// Displays, and Shortcuts configuration panes.
 
 import SwiftUI
 
@@ -10,7 +10,22 @@ struct SettingsView: View {
     @ObservedObject var displayDetector: DisplayDetector
 
     var body: some View {
-        Text("Settings placeholder")
-            .frame(width: 500, height: 400)
+        TabView {
+            GeneralTab(configManager: configManager)
+                .tabItem {
+                    Label("General", systemImage: "gearshape")
+                }
+
+            Text("Displays (coming next)")
+                .tabItem {
+                    Label("Displays", systemImage: "display.2")
+                }
+
+            Text("Shortcuts (coming next)")
+                .tabItem {
+                    Label("Shortcuts", systemImage: "keyboard")
+                }
+        }
+        .frame(width: 520, height: 420)
     }
 }
