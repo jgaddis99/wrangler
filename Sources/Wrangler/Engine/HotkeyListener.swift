@@ -5,6 +5,7 @@
 // bindings and fires action callbacks. Runs the event tap
 // on a background thread to avoid blocking the main thread.
 
+import ApplicationServices
 import CoreGraphics
 import Foundation
 
@@ -25,7 +26,7 @@ final class HotkeyListener {
         stop()
 
         thread = Thread { [weak self] in
-            self?.runEventTap()
+            self?.runEventTapWithRetry()
         }
         thread?.name = "com.jasong.Wrangler.HotkeyListener"
         thread?.qualityOfService = .userInteractive
@@ -53,12 +54,35 @@ final class HotkeyListener {
         bindingsLock.lock()
         _bindings = newBindings
         bindingsLock.unlock()
+        wranglerLog("Wrangler: HotkeyListener has \(newBindings.count) bindings")
+        for (combo, action) in newBindings {
+            print("  \(action.displayName): \(combo.displayString) (keyCode=\(combo.keyCode))")
+        }
     }
 
     private func currentBindings() -> [(KeyCombo, WranglerAction)] {
         bindingsLock.lock()
         defer { bindingsLock.unlock() }
         return _bindings
+    }
+
+    private func runEventTapWithRetry() {
+        // Retry event tap creation every 2 seconds for up to 60 seconds.
+        // Handles the case where the user grants permission after app start.
+        for attempt in 1...30 {
+            if AXIsProcessTrusted() {
+                if attempt > 1 {
+                    wranglerLog("Wrangler: Accessibility permission granted on attempt \(attempt)")
+                }
+                runEventTap()
+                return
+            }
+            if attempt == 1 {
+                wranglerLog("Wrangler: Waiting for accessibility permission (retrying for up to 60s)")
+            }
+            Thread.sleep(forTimeInterval: 2.0)
+        }
+        wranglerLog("Wrangler: Gave up waiting for accessibility permission after 60s")
     }
 
     private func runEventTap() {
@@ -98,9 +122,10 @@ final class HotkeyListener {
             callback: callback,
             userInfo: refcon
         ) else {
-            print("Wrangler: Failed to create event tap. Accessibility permission required.")
+            wranglerLog("Wrangler: FAILED to create event tap. AXIsProcessTrusted=\(AXIsProcessTrusted())")
             return
         }
+        wranglerLog("Wrangler: Event tap created successfully")
 
         self.eventTap = tap
         let source = CFMachPortCreateRunLoopSource(kCFAllocatorDefault, tap, 0)

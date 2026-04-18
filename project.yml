@@ -22,8 +22,9 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.jasong.Wrangler
         MARKETING_VERSION: "0.1.0"
         CURRENT_PROJECT_VERSION: 1
-        CODE_SIGN_ENTITLEMENTS: ""
-        CODE_SIGN_IDENTITY: "-"
+        CODE_SIGN_IDENTITY: "Apple Development"
+        CODE_SIGN_STYLE: Automatic
+        DEVELOPMENT_TEAM: ""
         ENABLE_APP_SANDBOX: false
         INFOPLIST_FILE: Sources/Wrangler/Info.plist
   WranglerTests:
