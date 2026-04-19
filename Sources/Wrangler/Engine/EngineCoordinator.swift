@@ -21,6 +21,12 @@ final class EngineCoordinator: ObservableObject {
     private var configCancellable: AnyCancellable?
     private weak var configManager: ConfigManager?
 
+    // Overlay management
+    private var overlayPanel: GridOverlayPanel?
+    private let snapPreview = SnapPreviewWindow()
+    private let dragDetector = DragDetector()
+    private var overlayIsOpen = false
+
     func start(configManager: ConfigManager) {
         self.configManager = configManager
 
@@ -61,10 +67,14 @@ final class EngineCoordinator: ObservableObject {
                 self.toggleOverlay(configManager: cm)
             }
         }
+
+        startDragDetection(configManager: configManager)
     }
 
     func stop() {
         hotkeyListener.stop()
+        dragDetector.stop()
+        hideOverlay()
         configCancellable = nil
     }
 
@@ -202,7 +212,106 @@ final class EngineCoordinator: ObservableObject {
 
     // MARK: - Overlay
 
+    func showOverlay(configManager: ConfigManager) {
+        guard !overlayIsOpen else { return }
+        let displays = displayDetector.displays
+        let configs = configManager.config.displays
+
+        if overlayPanel == nil {
+            overlayPanel = GridOverlayPanel(displays: displays, configs: configs)
+            overlayPanel?.overlayView.delegate = self
+        } else {
+            overlayPanel?.updateDisplays(displays, configs: configs)
+        }
+
+        overlayPanel?.showOverlay()
+        overlayIsOpen = true
+    }
+
+    func hideOverlay() {
+        overlayPanel?.hideOverlay()
+        snapPreview.hidePreview()
+        overlayIsOpen = false
+    }
+
     func toggleOverlay(configManager: ConfigManager) {
-        wranglerLog("Wrangler: Overlay toggle (not yet implemented)")
+        if overlayIsOpen {
+            hideOverlay()
+        } else {
+            showOverlay(configManager: configManager)
+        }
+    }
+
+    func startDragDetection(configManager: ConfigManager) {
+        guard configManager.config.general.autoShowOverlay else { return }
+        dragDetector.start { [weak self] isDragging in
+            guard let self = self else { return }
+            if isDragging {
+                self.showOverlay(configManager: configManager)
+            } else {
+                if self.overlayIsOpen {
+                    // Give user a moment to interact with the overlay
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+                        guard let self = self, self.overlayIsOpen else { return }
+                        self.hideOverlay()
+                    }
+                }
+            }
+        }
+    }
+}
+
+// MARK: - GridOverlayViewDelegate
+
+extension EngineCoordinator: GridOverlayViewDelegate {
+
+    func gridOverlayView(_ view: GridOverlayView, didSelectZone position: GridPosition, onDisplay displayID: UInt32) {
+        guard let config = configManager?.config else { return }
+        snapFocusedWindowToPosition(position, onDisplay: displayID, config: config)
+    }
+
+    func gridOverlayView(_ view: GridOverlayView, didRightClickZone position: GridPosition, onDisplay displayID: UInt32) {
+        let displayName = displayDetector.displays.first { $0.id == displayID }?.name ?? "Unknown"
+        let gridSummary = "Col \(position.column)-\(position.column + position.columnSpan - 1), Row \(position.row)-\(position.row + position.rowSpan - 1)"
+
+        ZoneSavePopover.show(
+            relativeTo: NSEvent.mouseLocation,
+            displayName: displayName,
+            gridSummary: gridSummary
+        ) { [weak self] name, keyCombo in
+            guard let self = self, let configManager = self.configManager else { return }
+            let zone = CustomZone(
+                name: name,
+                displayID: displayID,
+                column: position.column,
+                row: position.row,
+                columnSpan: position.columnSpan,
+                rowSpan: position.rowSpan,
+                keyCombo: keyCombo
+            )
+            configManager.config.customZones.append(zone)
+            configManager.save()
+            wranglerLog("Wrangler: Saved custom zone '\(name)' on display \(displayName)")
+        }
+    }
+
+    func gridOverlayView(_ view: GridOverlayView, dragUpdated position: GridPosition, onDisplay displayID: UInt32) {
+        guard let config = configManager?.config else { return }
+        let displayConfig = config.displays.first { $0.displayID == displayID }
+        let columns = displayConfig?.columns ?? 4
+        let rows = displayConfig?.rows ?? 4
+        let gap = displayConfig?.gap ?? 0
+
+        guard let visibleFrame = displayDetector.visibleFrame(for: displayID) else { return }
+
+        let frame = GridCalculator.calculateFrame(
+            for: position, in: visibleFrame,
+            gridColumns: columns, gridRows: rows, gap: gap
+        )
+        snapPreview.showPreview(frame: frame)
+    }
+
+    func gridOverlayViewDragEnded(_ view: GridOverlayView) {
+        snapPreview.hidePreview()
     }
 }
