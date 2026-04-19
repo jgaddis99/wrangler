@@ -12,6 +12,7 @@ protocol GridOverlayViewDelegate: AnyObject {
     func gridOverlayView(_ view: GridOverlayView, didRightClickZone position: GridPosition, onDisplay displayID: UInt32)
     func gridOverlayView(_ view: GridOverlayView, dragUpdated position: GridPosition, onDisplay displayID: UInt32)
     func gridOverlayViewDragEnded(_ view: GridOverlayView)
+    func gridOverlayView(_ view: GridOverlayView, hoveredDisplay displayID: UInt32?)
 }
 
 final class GridOverlayView: NSView {
@@ -155,12 +156,14 @@ final class GridOverlayView: NSView {
         let newHover = hitTestGrid(point)?.displayID
         if newHover != hoveredDisplayID {
             hoveredDisplayID = newHover
+            delegate?.gridOverlayView(self, hoveredDisplay: hoveredDisplayID)
             needsDisplay = true
         }
     }
 
     override func mouseExited(with event: NSEvent) {
         hoveredDisplayID = nil
+        delegate?.gridOverlayView(self, hoveredDisplay: nil)
         needsDisplay = true
     }
 

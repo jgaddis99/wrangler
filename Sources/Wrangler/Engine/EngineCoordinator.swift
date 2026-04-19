@@ -29,6 +29,7 @@ final class EngineCoordinator: ObservableObject {
     private var overlayIsOpen = false
     private var overlayTriggeredManually = false
     private var capturedWindow: AXUIElement?  // Window captured before overlay opens
+    private var capturedAppPID: pid_t?        // App PID captured before overlay opens
 
     func start(configManager: ConfigManager) {
         self.configManager = configManager
@@ -206,10 +207,17 @@ final class EngineCoordinator: ObservableObject {
         windowManager.setWindowFrame(window, frame: frame)
     }
 
-    /// Tile all windows of the focused app evenly within the selected grid zone.
+    /// Tile all windows of the captured app evenly within the selected grid zone.
     func batchTileWindows(in position: GridPosition, onDisplay displayID: UInt32, config: WranglerConfig) {
-        let windows = windowManager.getAllWindowsOfFocusedApp()
-        guard !windows.isEmpty else { return }
+        guard let pid = capturedAppPID else {
+            wranglerLog("Wrangler: No captured app PID for batch tile")
+            return
+        }
+        let windows = windowManager.getAllWindows(forPID: pid)
+        guard !windows.isEmpty else {
+            wranglerLog("Wrangler: No windows found for PID \(pid)")
+            return
+        }
 
         let displayConfig = config.displays.first { $0.displayID == displayID }
         let columns = displayConfig?.columns ?? 4
@@ -275,12 +283,13 @@ final class EngineCoordinator: ObservableObject {
     func showOverlay(configManager: ConfigManager, manual: Bool = false) {
         guard !overlayIsOpen else { return }
 
-        // Capture the focused window BEFORE showing the overlay panel,
+        // Capture the focused window and app BEFORE showing the overlay panel,
         // because once the panel appears it may steal AX focus.
         if case .success(let window) = windowManager.getFocusedWindow() {
             capturedWindow = window
-            wranglerLog("Wrangler: Captured focused window for overlay snap")
         }
+        capturedAppPID = NSWorkspace.shared.frontmostApplication?.processIdentifier
+        wranglerLog("Wrangler: Captured window and app PID=\(capturedAppPID ?? -1) for overlay")
 
         wranglerLog("Wrangler: Showing overlay (manual=\(manual))")
         let displays = displayDetector.displays
@@ -305,6 +314,7 @@ final class EngineCoordinator: ObservableObject {
         overlayIsOpen = false
         overlayTriggeredManually = false
         capturedWindow = nil
+        capturedAppPID = nil
     }
 
     func toggleOverlay(configManager: ConfigManager) {
@@ -398,6 +408,16 @@ extension EngineCoordinator: GridOverlayViewDelegate {
             gridColumns: columns, gridRows: rows, gap: gap
         )
         snapPreview.showPreview(frame: frame)
+    }
+
+    func gridOverlayView(_ view: GridOverlayView, hoveredDisplay displayID: UInt32?) {
+        if let displayID = displayID {
+            // Show a highlight border around the entire real display
+            guard let visibleFrame = displayDetector.visibleFrame(for: displayID) else { return }
+            snapPreview.showPreview(frame: visibleFrame)
+        } else {
+            snapPreview.hidePreview()
+        }
     }
 
     func gridOverlayViewDragEnded(_ view: GridOverlayView) {
