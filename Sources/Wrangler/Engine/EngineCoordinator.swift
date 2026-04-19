@@ -352,6 +352,43 @@ final class EngineCoordinator: ObservableObject {
         wranglerLog("Wrangler: Batch-tiled \(windowCount) windows into \(tileCols)x\(tileRows) grid")
     }
 
+    /// Tile all windows of a specific app PID into a grid zone. Used by menu bar.
+    func batchTileWindowsForPID(_ pid: pid_t, in position: GridPosition, onDisplay displayID: UInt32, config: WranglerConfig) {
+        let windows = windowManager.getAllWindows(forPID: pid)
+        guard !windows.isEmpty else { return }
+
+        let displayConfig = config.displays.first { $0.displayID == displayID }
+        let columns = displayConfig?.columns ?? 4
+        let rows = displayConfig?.rows ?? 4
+        let gap = displayConfig?.gap ?? 0
+
+        guard let visibleFrame = displayDetector.visibleFrame(for: displayID) else { return }
+
+        let zoneFrame = GridCalculator.calculateFrame(
+            for: position, in: visibleFrame,
+            gridColumns: columns, gridRows: rows, gap: gap
+        )
+
+        let windowCount = windows.count
+        let tileCols = min(windowCount, max(1, position.columnSpan))
+        let tileRows = Int(ceil(Double(windowCount) / Double(tileCols)))
+        let tileWidth = zoneFrame.width / CGFloat(tileCols)
+        let tileHeight = zoneFrame.height / CGFloat(tileRows)
+
+        for (index, window) in windows.enumerated() {
+            let col = index % tileCols
+            let row = index / tileCols
+            let frame = CGRect(
+                x: zoneFrame.origin.x + CGFloat(col) * tileWidth,
+                y: zoneFrame.origin.y + CGFloat(row) * tileHeight,
+                width: tileWidth,
+                height: tileHeight
+            )
+            windowManager.setWindowFrame(window, frame: frame)
+        }
+        wranglerLog("Wrangler: Menu batch-tiled \(windowCount) windows for PID \(pid)")
+    }
+
     func snapFocusedWindowToPosition(_ position: GridPosition, onDisplay displayID: UInt32, config: WranglerConfig) {
         // Use the captured window if available (overlay steals AX focus), else get current
         let window: AXUIElement

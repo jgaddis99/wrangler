@@ -73,6 +73,22 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         menu.addItem(withTitle: "Show Grid Overlay", action: #selector(showOverlay), keyEquivalent: "")
         menu.addItem(NSMenuItem.separator())
 
+        // Tile windows submenu — tile all windows of the frontmost app on a monitor
+        let tileMenu = NSMenu()
+        for display in engine.displayDetector.displays {
+            let item = NSMenuItem(
+                title: "Tile on \(display.name)",
+                action: #selector(tileOnDisplay(_:)),
+                keyEquivalent: ""
+            )
+            item.representedObject = display.id
+            tileMenu.addItem(item)
+        }
+        let tileItem = NSMenuItem(title: "Tile App Windows", action: nil, keyEquivalent: "")
+        tileItem.submenu = tileMenu
+        menu.addItem(tileItem)
+        menu.addItem(NSMenuItem.separator())
+
         // Custom zones submenu
         if !configManager.config.customZones.isEmpty {
             let zonesMenu = NSMenu()
@@ -120,6 +136,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     @objc private func showOverlay() {
         engine.toggleOverlay(configManager: configManager)
+    }
+
+    @objc private func tileOnDisplay(_ sender: NSMenuItem) {
+        guard let displayID = sender.representedObject as? UInt32 else { return }
+        // Get the frontmost app before Wrangler steals focus
+        guard let frontApp = NSWorkspace.shared.frontmostApplication else { return }
+        let displayConfig = configManager.config.displays.first { $0.displayID == displayID }
+        let columns = displayConfig?.columns ?? 4
+        let rows = displayConfig?.rows ?? 4
+        let fullGrid = GridPosition(column: 0, row: 0, columnSpan: columns, rowSpan: rows)
+        engine.batchTileWindowsForPID(frontApp.processIdentifier, in: fullGrid, onDisplay: displayID, config: configManager.config)
     }
 
     @objc private func triggerCustomZone(_ sender: NSMenuItem) {

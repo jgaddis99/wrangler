@@ -197,7 +197,7 @@ final class GridOverlayView: NSView {
             .foregroundColor: NSColor.white.withAlphaComponent(0.5),
             .font: NSFont.systemFont(ofSize: 11, weight: .regular)
         ]
-        let subtitle = NSAttributedString(string: "Drag to snap  \u{00B7}  \u{2318}+drag to tile all  \u{00B7}  Right-click to save zone", attributes: subtitleAttrs)
+        let subtitle = NSAttributedString(string: "Drag to snap  \u{00B7}  \u{2318}+drag to tile all app windows  \u{00B7}  Right-click to save zone", attributes: subtitleAttrs)
         let subtitleSize = subtitle.size()
         let subtitlePoint = NSPoint(x: (rect.width - subtitleSize.width) / 2, y: point.y + textSize.height + 2)
         subtitle.draw(at: subtitlePoint)
