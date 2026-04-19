@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://jgaddis99.github.io/wrangler/sitemap.xml
