@@ -14,7 +14,7 @@ struct GridPreviewView: View {
     let displaySize: CGSize
     let displayID: UInt32
 
-    private let previewWidth: CGFloat = 220
+    private let previewWidth: CGFloat = 180
 
     var body: some View {
         let aspectRatio = displaySize.height / displaySize.width

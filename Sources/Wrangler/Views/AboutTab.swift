@@ -1,8 +1,7 @@
 // Sources/Wrangler/Views/AboutTab.swift
 //
 // About tab showing app name, version, build number,
-// and credits. Styled to match the modern card-based
-// settings layout.
+// and credits. Centered layout with modern macOS styling.
 
 import SwiftUI
 
@@ -17,40 +16,40 @@ struct AboutTab: View {
     }
 
     var body: some View {
-        VStack(spacing: 24) {
+        VStack(spacing: 0) {
             Spacer()
 
-            // App icon
-            Image(nsImage: NSApp.applicationIconImage)
-                .resizable()
-                .frame(width: 96, height: 96)
-                .cornerRadius(20)
-                .shadow(color: .black.opacity(0.2), radius: 8, y: 4)
+            VStack(spacing: 16) {
+                // App icon
+                Image(nsImage: NSApp.applicationIconImage)
+                    .resizable()
+                    .frame(width: 88, height: 88)
+                    .cornerRadius(18)
+                    .shadow(color: .black.opacity(0.15), radius: 6, y: 3)
 
-            // App name
-            Text("Wrangler")
-                .font(.system(size: 28, weight: .bold))
+                // App name + version
+                VStack(spacing: 4) {
+                    Text("Wrangler")
+                        .font(.system(size: 26, weight: .bold))
 
-            // Version
-            Text("Version \(version) (\(build))")
-                .font(.system(size: 13))
-                .foregroundStyle(.secondary)
+                    Text("Version \(version) (\(build))")
+                        .font(.system(size: 12))
+                        .foregroundStyle(.secondary)
+                }
 
-            // Tagline
-            Text("Wrangle your windows.")
-                .font(.system(size: 13))
-                .foregroundStyle(.tertiary)
-                .padding(.top, -8)
+                // Tagline
+                Text("Wrangle your windows.")
+                    .font(.system(size: 12))
+                    .foregroundStyle(.tertiary)
+            }
 
             Spacer()
 
             // Credits
-            VStack(spacing: 6) {
-                Text("by Jason Gaddis")
-                    .font(.system(size: 11))
-                    .foregroundStyle(.secondary)
-            }
-            .padding(.bottom, 20)
+            Text("by Jason Gaddis")
+                .font(.system(size: 11))
+                .foregroundStyle(.tertiary)
+                .padding(.bottom, 16)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }

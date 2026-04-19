@@ -2,7 +2,7 @@
 //
 // Shortcuts settings tab: lists all available window actions
 // with configurable keyboard shortcuts and enable/disable toggles.
-// Uses a compact row layout to fit all 12 shortcuts without scrolling.
+// Uses a two-column layout to fit all shortcuts without scrolling.
 
 import SwiftUI
 
@@ -16,20 +16,25 @@ struct ShortcutsTab: View {
     private static let actions: [WranglerAction] = [.maximize, .center, .autoTileDisplay]
     private static let displayMovement: [WranglerAction] = [.nextDisplay, .previousDisplay]
 
-    /// Fixed width for the action label so all shortcut recorders align.
-    private let labelWidth: CGFloat = 150
-
     var body: some View {
         VStack(spacing: 0) {
-            VStack(spacing: 10) {
-                shortcutSection("Halves", actions: Self.halves)
-                shortcutSection("Quarters", actions: Self.quarters)
-                shortcutSection("Thirds", actions: Self.thirds)
-                shortcutSection("Resize", actions: Self.resize)
-                shortcutSection("Actions", actions: Self.actions)
-                shortcutSection("Display Movement", actions: Self.displayMovement)
+            // Two-column layout keeps everything visible without scrolling
+            HStack(alignment: .top, spacing: 12) {
+                // Left column
+                VStack(spacing: 8) {
+                    shortcutSection("Halves", actions: Self.halves)
+                    shortcutSection("Quarters", actions: Self.quarters)
+                    shortcutSection("Actions", actions: Self.actions)
+                }
+
+                // Right column
+                VStack(spacing: 8) {
+                    shortcutSection("Thirds", actions: Self.thirds)
+                    shortcutSection("Resize", actions: Self.resize)
+                    shortcutSection("Display Movement", actions: Self.displayMovement)
+                }
             }
-            .padding(.horizontal, 24)
+            .padding(.horizontal, 20)
             .padding(.vertical, 14)
 
             Spacer(minLength: 0)
@@ -39,28 +44,14 @@ struct ShortcutsTab: View {
 
     @ViewBuilder
     private func shortcutSection(_ title: String, actions: [WranglerAction]) -> some View {
-        VStack(alignment: .leading, spacing: 0) {
-            Text(title)
-                .font(.system(size: 11, weight: .medium))
-                .foregroundStyle(.secondary)
-                .textCase(.uppercase)
-                .padding(.bottom, 4)
-
-            VStack(spacing: 0) {
-                ForEach(Array(actions.enumerated()), id: \.element.id) { idx, action in
-                    if idx > 0 {
-                        Divider()
-                            .padding(.horizontal, 10)
-                    }
-                    shortcutRow(for: action)
+        SettingsListCard(title) {
+            ForEach(Array(actions.enumerated()), id: \.element.id) { idx, action in
+                if idx > 0 {
+                    Divider()
+                        .padding(.horizontal, 8)
                 }
+                shortcutRow(for: action)
             }
-            .background(Color(nsColor: .controlBackgroundColor))
-            .clipShape(RoundedRectangle(cornerRadius: 8))
-            .overlay(
-                RoundedRectangle(cornerRadius: 8)
-                    .strokeBorder(Color.primary.opacity(0.06), lineWidth: 1)
-            )
         }
     }
 
@@ -69,17 +60,18 @@ struct ShortcutsTab: View {
         let index = configManager.config.shortcuts.firstIndex { $0.action == action }
 
         if let index = index {
-            HStack(spacing: 6) {
+            HStack(spacing: 4) {
                 Image(systemName: action.iconName)
-                    .frame(width: 20, alignment: .center)
+                    .frame(width: 16, alignment: .center)
                     .foregroundColor(.accentColor)
                     .imageScale(.small)
+                    .font(.system(size: 10))
 
                 Text(action.displayName)
-                    .font(.system(size: 12))
-                    .frame(width: labelWidth, alignment: .leading)
+                    .font(.system(size: 11))
+                    .lineLimit(1)
 
-                Spacer()
+                Spacer(minLength: 4)
 
                 ShortcutRecorderView(
                     keyCombo: Binding(
@@ -90,7 +82,7 @@ struct ShortcutsTab: View {
                         }
                     )
                 )
-                .frame(width: 130)
+                .frame(width: 100)
 
                 Toggle("", isOn: Binding(
                     get: { configManager.config.shortcuts[index].enabled },
@@ -103,22 +95,9 @@ struct ShortcutsTab: View {
                 .controlSize(.mini)
                 .labelsHidden()
                 .help(configManager.config.shortcuts[index].enabled ? "Disable shortcut" : "Enable shortcut")
-
-                Button(action: {
-                    configManager.config.shortcuts[index].keyCombo = nil
-                    configManager.save()
-                }) {
-                    Image(systemName: "xmark.circle.fill")
-                        .foregroundStyle(.secondary)
-                        .imageScale(.small)
-                }
-                .buttonStyle(.borderless)
-                .help("Clear shortcut")
-                .opacity(configManager.config.shortcuts[index].keyCombo != nil ? 1 : 0)
-                .disabled(configManager.config.shortcuts[index].keyCombo == nil)
             }
-            .padding(.horizontal, 10)
-            .padding(.vertical, 5)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 3)
         }
     }
 }

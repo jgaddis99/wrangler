@@ -2,7 +2,7 @@
 //
 // Custom zones management tab: displays saved zones with their
 // display, grid position, shortcut binding, rename, and delete.
-// Compact card layout with inline editing.
+// Uses SettingsListCard for consistent card styling across tabs.
 
 import AppKit
 import SwiftUI
@@ -10,110 +10,98 @@ import SwiftUI
 struct ZonesTab: View {
     @ObservedObject var configManager: ConfigManager
 
-    private let labelWidth: CGFloat = 150
+    private let labelWidth: CGFloat = 140
 
     var body: some View {
         VStack(spacing: 0) {
-            if configManager.config.customZones.isEmpty {
-                Spacer()
-                VStack(spacing: 8) {
-                    Image(systemName: "rectangle.3.group")
-                        .font(.system(size: 28))
-                        .foregroundStyle(.secondary)
-                    Text("No custom zones saved yet")
-                        .font(.body)
-                        .foregroundStyle(.secondary)
-                    Text("Open the grid overlay (Ctrl+Alt+Space) and right-click drag to save a zone.")
-                        .font(.caption)
-                        .foregroundStyle(.tertiary)
-                        .multilineTextAlignment(.center)
-                        .frame(maxWidth: 300)
-                }
-                Spacer()
-            } else {
-                VStack(alignment: .leading, spacing: 8) {
-                    HStack {
-                        Text("Saved Zones")
-                            .font(.system(size: 11, weight: .medium))
-                            .foregroundStyle(.secondary)
-                            .textCase(.uppercase)
-                        Spacer()
-                        Text("\(configManager.config.customZones.count) zone\(configManager.config.customZones.count == 1 ? "" : "s")")
-                            .font(.system(size: 11))
-                            .foregroundStyle(.tertiary)
+            VStack(spacing: 10) {
+                // MARK: - Custom Zones
+                if configManager.config.customZones.isEmpty {
+                    SettingsCard("Custom Zones") {
+                        HStack {
+                            Spacer()
+                            VStack(spacing: 4) {
+                                Image(systemName: "rectangle.3.group")
+                                    .font(.system(size: 20))
+                                    .foregroundStyle(.tertiary)
+                                Text("No custom zones saved yet")
+                                    .font(.system(size: 12))
+                                    .foregroundStyle(.secondary)
+                                Text("Open the grid overlay and right-click drag to save a zone.")
+                                    .font(.caption)
+                                    .foregroundStyle(.tertiary)
+                                    .multilineTextAlignment(.center)
+                            }
+                            Spacer()
+                        }
+                        .padding(.vertical, 8)
                     }
-
-                    VStack(spacing: 0) {
+                } else {
+                    SettingsListCard(
+                        "Custom Zones",
+                        trailing: AnyView(
+                            HStack(spacing: 8) {
+                                Text("\(configManager.config.customZones.count) zone\(configManager.config.customZones.count == 1 ? "" : "s")")
+                                    .font(.system(size: 11))
+                                    .foregroundStyle(.tertiary)
+                                Button(role: .destructive) {
+                                    configManager.config.customZones.removeAll()
+                                    configManager.save()
+                                } label: {
+                                    Text("Delete All")
+                                        .font(.system(size: 10))
+                                }
+                                .controlSize(.small)
+                            }
+                        )
+                    ) {
                         ForEach(Array(configManager.config.customZones.enumerated()), id: \.element.id) { idx, zone in
                             if idx > 0 {
-                                Divider().padding(.horizontal, 10)
+                                Divider().padding(.horizontal, 8)
                             }
                             zoneRow(for: zone)
                         }
                     }
-                    .background(Color(nsColor: .controlBackgroundColor))
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 8)
-                            .strokeBorder(Color.primary.opacity(0.06), lineWidth: 1)
-                    )
-
-                    HStack {
-                        Spacer()
-                        Button(role: .destructive) {
-                            configManager.config.customZones.removeAll()
-                            configManager.save()
-                        } label: {
-                            Text("Delete All Zones")
-                                .font(.system(size: 11))
-                        }
-                        .disabled(configManager.config.customZones.isEmpty)
-                    }
-                }
-                .padding(.horizontal, 24)
-                .padding(.vertical, 14)
-            }
-
-            // MARK: - Pinned Apps
-            VStack(alignment: .leading, spacing: 8) {
-                HStack {
-                    Text("Pinned Apps")
-                        .font(.system(size: 11, weight: .medium))
-                        .foregroundStyle(.secondary)
-                        .textCase(.uppercase)
-                    Spacer()
-                    Button(action: { pinCurrentApp() }) {
-                        Label("Pin Current App", systemImage: "plus")
-                            .font(.system(size: 11))
-                    }
                 }
 
+                // MARK: - Pinned Apps
                 if configManager.config.appPins.isEmpty {
-                    HStack {
-                        Spacer()
-                        VStack(spacing: 4) {
-                            Text("No apps pinned")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                            Text("Pin an app to always restore it to a specific position.")
-                                .font(.caption2)
-                                .foregroundStyle(.tertiary)
+                    SettingsCard("Pinned Apps") {
+                        HStack {
+                            Spacer()
+                            VStack(spacing: 4) {
+                                Image(systemName: "pin")
+                                    .font(.system(size: 20))
+                                    .foregroundStyle(.tertiary)
+                                Text("No apps pinned")
+                                    .font(.system(size: 12))
+                                    .foregroundStyle(.secondary)
+                                Text("Pin an app to always restore it to a specific position.")
+                                    .font(.caption)
+                                    .foregroundStyle(.tertiary)
+                            }
+                            Spacer()
                         }
-                        Spacer()
+                        .padding(.vertical, 8)
                     }
-                    .padding(.vertical, 12)
-                    .background(Color(nsColor: .controlBackgroundColor))
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
                 } else {
-                    VStack(spacing: 0) {
+                    SettingsListCard(
+                        "Pinned Apps",
+                        trailing: AnyView(
+                            Button(action: { pinCurrentApp() }) {
+                                Label("Pin Current App", systemImage: "plus")
+                                    .font(.system(size: 10))
+                            }
+                            .controlSize(.small)
+                        )
+                    ) {
                         ForEach(Array(configManager.config.appPins.enumerated()), id: \.element.id) { idx, pin in
-                            if idx > 0 { Divider().padding(.horizontal, 10) }
+                            if idx > 0 {
+                                Divider().padding(.horizontal, 8)
+                            }
                             pinRow(for: pin)
                         }
                     }
-                    .background(Color(nsColor: .controlBackgroundColor))
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
-                    .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(Color.primary.opacity(0.06)))
                 }
             }
             .padding(.horizontal, 24)
@@ -130,7 +118,7 @@ struct ZonesTab: View {
             // Zone color indicator
             RoundedRectangle(cornerRadius: 2)
                 .fill(Color.accentColor)
-                .frame(width: 4, height: 28)
+                .frame(width: 3, height: 24)
 
             VStack(alignment: .leading, spacing: 1) {
                 // Editable name
@@ -144,12 +132,12 @@ struct ZonesTab: View {
                     }
                 ))
                 .textFieldStyle(.plain)
-                .font(.system(size: 12, weight: .medium))
+                .font(.system(size: 11, weight: .medium))
                 .frame(width: labelWidth, alignment: .leading)
 
-                Text("\(zone.displayName) — Col \(zone.column)–\(zone.column + zone.columnSpan - 1), Row \(zone.row)–\(zone.row + zone.rowSpan - 1)")
-                    .font(.system(size: 10))
-                    .foregroundStyle(.secondary)
+                Text("\(zone.displayName) \u{2014} Col \(zone.column)\u{2013}\(zone.column + zone.columnSpan - 1), Row \(zone.row)\u{2013}\(zone.row + zone.rowSpan - 1)")
+                    .font(.system(size: 9))
+                    .foregroundStyle(.tertiary)
                     .lineLimit(1)
             }
 
@@ -164,38 +152,38 @@ struct ZonesTab: View {
                     }
                 }
             ))
-            .frame(width: 130)
+            .frame(width: 120)
 
             Button(action: {
                 configManager.config.customZones.removeAll { $0.id == zone.id }
                 configManager.save()
             }) {
                 Image(systemName: "trash")
-                    .foregroundStyle(.red)
+                    .foregroundStyle(.red.opacity(0.7))
                     .imageScale(.small)
             }
             .buttonStyle(.borderless)
             .help("Delete this zone")
         }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 5)
+        .padding(.horizontal, 8)
+        .padding(.vertical, 4)
     }
 
     @ViewBuilder
     private func pinRow(for pin: AppPin) -> some View {
-        HStack(spacing: 8) {
+        HStack(spacing: 6) {
             if let appURL = NSWorkspace.shared.urlForApplication(withBundleIdentifier: pin.bundleID) {
                 Image(nsImage: NSWorkspace.shared.icon(forFile: appURL.path))
                     .resizable()
-                    .frame(width: 20, height: 20)
+                    .frame(width: 18, height: 18)
             }
 
             VStack(alignment: .leading, spacing: 1) {
                 Text(pin.appName)
-                    .font(.system(size: 12, weight: .medium))
-                Text("\(pin.displayName) — Col \(pin.column)–\(pin.column + pin.columnSpan - 1), Row \(pin.row)–\(pin.row + pin.rowSpan - 1)")
-                    .font(.system(size: 10))
-                    .foregroundStyle(.secondary)
+                    .font(.system(size: 11, weight: .medium))
+                Text("\(pin.displayName) \u{2014} Col \(pin.column)\u{2013}\(pin.column + pin.columnSpan - 1), Row \(pin.row)\u{2013}\(pin.row + pin.rowSpan - 1)")
+                    .font(.system(size: 9))
+                    .foregroundStyle(.tertiary)
             }
 
             Spacer()
@@ -205,13 +193,13 @@ struct ZonesTab: View {
                 configManager.save()
             }) {
                 Image(systemName: "trash")
-                    .foregroundStyle(.red)
+                    .foregroundStyle(.red.opacity(0.7))
                     .imageScale(.small)
             }
             .buttonStyle(.borderless)
         }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 5)
+        .padding(.horizontal, 8)
+        .padding(.vertical, 4)
     }
 
     private func pinCurrentApp() {
