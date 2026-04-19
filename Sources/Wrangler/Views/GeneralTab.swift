@@ -54,6 +54,17 @@ struct GeneralTab: View {
                             configManager.save()
                         }
                         .help("Automatically display the grid overlay when you start dragging a window")
+
+                    HStack {
+                        Text("Reset pins shortcut")
+                            .frame(width: labelWidth, alignment: .leading)
+                        ShortcutRecorderView(keyCombo: $configManager.config.general.resetPinsShortcut)
+                            .frame(width: 140)
+                            .onChange(of: configManager.config.general.resetPinsShortcut) { _, _ in
+                                configManager.save()
+                            }
+                    }
+                    .help("Shortcut to reset all pinned apps to their designated grid positions")
                 }
 
                 // Behavior
