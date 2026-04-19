@@ -16,11 +16,14 @@ struct GeneralConfig: Codable, Equatable {
     var windowTarget: WindowTarget = .frontMost
     var globalShortcut: KeyCombo? = nil
     var hideMenuBarIcon: Bool = false
+    var overlayShortcut: KeyCombo? = KeyCombo(keyCode: 0x31, control: true, option: true, shift: false, command: false) // Ctrl+Alt+Space
+    var autoShowOverlay: Bool = true
 }
 
 struct WranglerConfig: Codable, Equatable {
     var general: GeneralConfig = GeneralConfig()
     var displays: [DisplayConfig] = []
+    var customZones: [CustomZone] = []
     // Default shortcuts use Ctrl+Alt (⌃⌥) as the base modifier for cross-keyboard compat.
     // Quarters use UIJK keys which form a spatial 2x2 grid on the keyboard: U I / J K
     // Display switching uses Ctrl+Cmd (⌃⌘) = Ctrl+Win on Windows keyboards.

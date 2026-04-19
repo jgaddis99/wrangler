@@ -66,4 +66,34 @@ final class ConfigTests: XCTestCase {
         let withCombos = config.shortcuts.filter { $0.keyCombo != nil }
         XCTAssertEqual(withCombos.count, config.shortcuts.count, "All default shortcuts should have key combos")
     }
+
+    func testCustomZoneRoundTrip() throws {
+        let zone = CustomZone(
+            name: "Left Third",
+            displayID: 1,
+            column: 0, row: 0,
+            columnSpan: 2, rowSpan: 4,
+            keyCombo: KeyCombo(keyCode: 0x12, control: true, option: true, shift: false, command: false)
+        )
+        let data = try JSONEncoder().encode(zone)
+        let decoded = try JSONDecoder().decode(CustomZone.self, from: data)
+        XCTAssertEqual(decoded.name, "Left Third")
+        XCTAssertEqual(decoded.column, 0)
+        XCTAssertEqual(decoded.columnSpan, 2)
+        XCTAssertEqual(decoded.id, zone.id)
+    }
+
+    func testConfigWithCustomZonesRoundTrip() throws {
+        var config = WranglerConfig()
+        config.customZones = [
+            CustomZone(name: "Test Zone", displayID: 1, column: 0, row: 0, columnSpan: 2, rowSpan: 2, keyCombo: nil)
+        ]
+        config.general.autoShowOverlay = false
+
+        let data = try JSONEncoder().encode(config)
+        let decoded = try JSONDecoder().decode(WranglerConfig.self, from: data)
+        XCTAssertEqual(decoded.customZones.count, 1)
+        XCTAssertEqual(decoded.customZones[0].name, "Test Zone")
+        XCTAssertFalse(decoded.general.autoShowOverlay)
+    }
 }
