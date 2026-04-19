@@ -46,13 +46,9 @@ struct AboutTab: View {
 
             // Credits
             VStack(spacing: 6) {
-                Text("Built by Jason Gaddis")
+                Text("by Jason Gaddis")
                     .font(.system(size: 11))
                     .foregroundStyle(.secondary)
-
-                Text("A Lasso replacement, built with Claude")
-                    .font(.system(size: 11))
-                    .foregroundStyle(.tertiary)
             }
             .padding(.bottom, 20)
         }
