@@ -11,14 +11,14 @@ import Foundation
 
 final class HotkeyListener {
 
-    typealias ActionHandler = (WranglerAction) -> Void
+    typealias ActionHandler = (HotkeyBinding) -> Void
 
     private var eventTap: CFMachPort?
     private var runLoopSource: CFRunLoopSource?
     private var runLoop: CFRunLoop?
     private var thread: Thread?
     private let bindingsLock = NSLock()
-    private var _bindings: [(KeyCombo, WranglerAction)] = []
+    private var _bindings: [(KeyCombo, HotkeyBinding)] = []
     private var handler: ActionHandler?
 
     func start(handler: @escaping ActionHandler) {
@@ -46,21 +46,29 @@ final class HotkeyListener {
         thread = nil
     }
 
-    func updateBindings(shortcuts: [ActionShortcut]) {
-        let newBindings = shortcuts.compactMap { shortcut -> (KeyCombo, WranglerAction)? in
-            guard shortcut.enabled, let combo = shortcut.keyCombo else { return nil }
-            return (combo, shortcut.action)
+    func updateBindings(shortcuts: [ActionShortcut], customZones: [CustomZone] = [], overlayShortcut: KeyCombo? = nil) {
+        var newBindings: [(KeyCombo, HotkeyBinding)] = []
+
+        if let overlayCombo = overlayShortcut {
+            newBindings.append((overlayCombo, .overlay))
         }
+
+        for shortcut in shortcuts {
+            guard shortcut.enabled, let combo = shortcut.keyCombo else { continue }
+            newBindings.append((combo, .predefined(shortcut.action)))
+        }
+        for zone in customZones {
+            guard let combo = zone.keyCombo else { continue }
+            newBindings.append((combo, .customZone(zone.id)))
+        }
+
         bindingsLock.lock()
         _bindings = newBindings
         bindingsLock.unlock()
-        wranglerLog("Wrangler: HotkeyListener has \(newBindings.count) bindings")
-        for (combo, action) in newBindings {
-            print("  \(action.displayName): \(combo.displayString) (keyCode=\(combo.keyCode))")
-        }
+        wranglerLog("Wrangler: HotkeyListener has \(newBindings.count) bindings (\(shortcuts.filter { $0.enabled && $0.keyCombo != nil }.count) predefined, \(customZones.filter { $0.keyCombo != nil }.count) custom)")
     }
 
-    private func currentBindings() -> [(KeyCombo, WranglerAction)] {
+    private func currentBindings() -> [(KeyCombo, HotkeyBinding)] {
         bindingsLock.lock()
         defer { bindingsLock.unlock() }
         return _bindings
@@ -101,10 +109,10 @@ final class HotkeyListener {
             let keyCode = UInt16(event.getIntegerValueField(.keyboardEventKeycode))
             let flags = event.flags
 
-            for (combo, action) in listener.currentBindings() {
+            for (combo, binding) in listener.currentBindings() {
                 if combo.matches(keyCode: keyCode, flags: flags) {
                     DispatchQueue.main.async {
-                        listener.handler?(action)
+                        listener.handler?(binding)
                     }
                     return nil // Consume the event
                 }
