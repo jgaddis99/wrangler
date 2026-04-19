@@ -26,7 +26,7 @@
     <key>SUFeedURL</key>
     <string>https://raw.githubusercontent.com/jgaddis99/wrangler/master/appcast.xml</string>
     <key>SUPublicEDKey</key>
-    <string></string>
+    <string>De4QP4mfR/86r3rnmXewJoy8O9uMo/NQgUEIkRmGw+4=</string>
     <key>SUEnableAutomaticChecks</key>
     <true/>
 </dict>
