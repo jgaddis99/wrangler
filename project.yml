@@ -11,6 +11,11 @@ configFiles:
   Debug: Local.xcconfig
   Release: Local.xcconfig
 
+packages:
+  Sparkle:
+    url: https://github.com/sparkle-project/Sparkle
+    from: "2.6.0"
+
 settings:
   base:
     SWIFT_VERSION: "5.10"
@@ -21,6 +26,9 @@ targets:
     platform: macOS
     sources:
       - path: Sources/Wrangler
+    dependencies:
+      - package: Sparkle
+        product: Sparkle
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.jasong.Wrangler

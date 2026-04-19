@@ -14,6 +14,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var cancellables = Set<AnyCancellable>()
     let engine = EngineCoordinator()
     let configManager = ConfigManager()
+    let updateManager = UpdateManager()
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         setupMenuBar()
@@ -112,6 +113,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             menu.addItem(NSMenuItem.separator())
         }
 
+        menu.addItem(withTitle: "Check for Updates…", action: #selector(checkForUpdates), keyEquivalent: "")
+        menu.addItem(NSMenuItem.separator())
         menu.addItem(withTitle: "Settings…", action: #selector(openSettings), keyEquivalent: ",")
         menu.addItem(NSMenuItem.separator())
         menu.addItem(withTitle: "Quit Wrangler", action: #selector(quitApp), keyEquivalent: "q")
@@ -184,6 +187,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 NSApp.sendAction(Selector(("showPreferencesWindow:")), to: nil, from: nil)
             }
         }
+    }
+
+    @objc private func checkForUpdates() {
+        updateManager.checkForUpdates()
     }
 
     @objc private func quitApp() {
