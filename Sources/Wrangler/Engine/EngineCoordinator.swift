@@ -140,18 +140,61 @@ final class EngineCoordinator: ObservableObject {
         col = max(0, min(col, columns - 1))
         row = max(0, min(row, rows - 1))
 
-        // Move one cell in the direction
+        // Move one cell in the direction, crossing to adjacent monitor at edges
+        var targetDisplayID = currentDisplayID
+        var targetCol = col
+        var targetRow = row
+
         switch direction {
-        case .left:  col = max(0, col - 1)
-        case .right: col = min(columns - 1, col + 1)
-        case .up:    row = max(0, row - 1)
-        case .down:  row = min(rows - 1, row + 1)
+        case .left:
+            if col > 0 {
+                targetCol = col - 1
+            } else if let adjDisplay = displayDetector.adjacentDisplay(from: currentDisplayID, direction: .left) {
+                targetDisplayID = adjDisplay
+                let adjConfig = config.displays.first { $0.displayID == adjDisplay }
+                targetCol = (adjConfig?.columns ?? 4) - 1
+                targetRow = min(row, (adjConfig?.rows ?? 4) - 1)
+            }
+        case .right:
+            if col < columns - 1 {
+                targetCol = col + 1
+            } else if let adjDisplay = displayDetector.adjacentDisplay(from: currentDisplayID, direction: .right) {
+                targetDisplayID = adjDisplay
+                targetCol = 0
+                let adjConfig = config.displays.first { $0.displayID == adjDisplay }
+                targetRow = min(row, (adjConfig?.rows ?? 4) - 1)
+            }
+        case .up:
+            if row > 0 {
+                targetRow = row - 1
+            } else if let adjDisplay = displayDetector.adjacentDisplay(from: currentDisplayID, direction: .up) {
+                targetDisplayID = adjDisplay
+                let adjConfig = config.displays.first { $0.displayID == adjDisplay }
+                targetRow = (adjConfig?.rows ?? 4) - 1
+                targetCol = min(col, (adjConfig?.columns ?? 4) - 1)
+            }
+        case .down:
+            if row < rows - 1 {
+                targetRow = row + 1
+            } else if let adjDisplay = displayDetector.adjacentDisplay(from: currentDisplayID, direction: .down) {
+                targetDisplayID = adjDisplay
+                targetRow = 0
+                let adjConfig = config.displays.first { $0.displayID == adjDisplay }
+                targetCol = min(col, (adjConfig?.columns ?? 4) - 1)
+            }
         }
 
-        let position = GridPosition(column: col, row: row, columnSpan: 1, rowSpan: 1)
+        let targetConfig = config.displays.first { $0.displayID == targetDisplayID }
+        let targetColumns = targetConfig?.columns ?? 4
+        let targetRows = targetConfig?.rows ?? 4
+        let targetGap = targetConfig?.gap ?? 0
+
+        guard let targetFrame = displayDetector.visibleFrame(for: targetDisplayID) else { return }
+
+        let position = GridPosition(column: targetCol, row: targetRow, columnSpan: 1, rowSpan: 1)
         let frame = GridCalculator.calculateFrame(
-            for: position, in: visibleFrame,
-            gridColumns: columns, gridRows: rows, gap: gap
+            for: position, in: targetFrame,
+            gridColumns: targetColumns, gridRows: targetRows, gap: targetGap
         )
         windowManager.setWindowFrame(window, frame: frame)
     }
