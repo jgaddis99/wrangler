@@ -85,18 +85,6 @@ struct GeneralTab: View {
                     .help("Seconds of inactivity before the overlay hides itself")
                 }
 
-                // Menu Bar
-                SettingsCard("Menu Bar") {
-                    Toggle("Hide menu bar icon", isOn: $configManager.config.general.hideMenuBarIcon)
-                        .disabled(true)
-                        .onChange(of: configManager.config.general.hideMenuBarIcon) { _, _ in
-                            configManager.save()
-                        }
-                    Text("Hiding the menu bar icon is disabled in v0.1 to prevent lockout.")
-                        .font(.caption)
-                        .foregroundStyle(.tertiary)
-                }
-
                 // Accessibility
                 SettingsCard("Accessibility") {
                     HStack(spacing: 8) {
