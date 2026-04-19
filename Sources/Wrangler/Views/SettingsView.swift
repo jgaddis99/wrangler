@@ -31,6 +31,11 @@ struct SettingsView: View {
                 .tabItem {
                     Label("Zones", systemImage: "square.grid.3x3")
                 }
+
+            AboutTab()
+                .tabItem {
+                    Label("About", systemImage: "info.circle")
+                }
         }
         .tabViewStyle(.automatic)
         .frame(minWidth: 580, minHeight: 600)
