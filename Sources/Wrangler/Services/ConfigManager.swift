@@ -15,9 +15,12 @@ final class ConfigManager: ObservableObject {
     private let fileURL: URL
 
     init() {
-        let appSupport = FileManager.default.urls(
+        guard let appSupportBase = FileManager.default.urls(
             for: .applicationSupportDirectory, in: .userDomainMask
-        ).first!.appendingPathComponent("Wrangler", isDirectory: true)
+        ).first else {
+            fatalError("Wrangler: Unable to find Application Support directory")
+        }
+        let appSupport = appSupportBase.appendingPathComponent("Wrangler", isDirectory: true)
 
         self.fileURL = appSupport.appendingPathComponent("config.json")
         self.config = Self.load(from: fileURL) ?? WranglerConfig()

@@ -18,6 +18,10 @@ build/
 # Generated
 Wrangler.xcodeproj/
 
+# Dev tools
+generate-icon.swift
+icon.svg
+
 # Profiling
 *.profraw
 *.profdata
