@@ -11,4 +11,5 @@ enum HotkeyBinding: Equatable {
     case predefined(WranglerAction)
     case customZone(UUID)
     case overlay
+    case resetPins
 }

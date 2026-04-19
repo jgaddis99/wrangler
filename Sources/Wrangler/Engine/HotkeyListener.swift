@@ -46,8 +46,12 @@ final class HotkeyListener {
         thread = nil
     }
 
-    func updateBindings(shortcuts: [ActionShortcut], customZones: [CustomZone] = [], overlayShortcut: KeyCombo? = nil) {
+    func updateBindings(shortcuts: [ActionShortcut], customZones: [CustomZone] = [], overlayShortcut: KeyCombo? = nil, resetPinsShortcut: KeyCombo? = nil) {
         var newBindings: [(KeyCombo, HotkeyBinding)] = []
+
+        if let resetCombo = resetPinsShortcut {
+            newBindings.append((resetCombo, .resetPins))
+        }
 
         if let overlayCombo = overlayShortcut {
             newBindings.append((overlayCombo, .overlay))

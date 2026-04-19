@@ -89,6 +89,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         menu.addItem(tileItem)
         menu.addItem(NSMenuItem.separator())
 
+        // Reset All Pins
+        if !configManager.config.appPins.isEmpty {
+            menu.addItem(withTitle: "Reset All Pins", action: #selector(resetPins), keyEquivalent: "")
+            menu.addItem(NSMenuItem.separator())
+        }
+
         // Custom zones submenu
         if !configManager.config.customZones.isEmpty {
             let zonesMenu = NSMenu()
@@ -152,6 +158,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     @objc private func triggerCustomZone(_ sender: NSMenuItem) {
         guard let zoneID = sender.representedObject as? UUID else { return }
         engine.snapToCustomZone(id: zoneID, config: configManager.config)
+    }
+
+    @objc private func resetPins() {
+        engine.resetAllPins(config: configManager.config)
     }
 
     @objc private func openSettings() {

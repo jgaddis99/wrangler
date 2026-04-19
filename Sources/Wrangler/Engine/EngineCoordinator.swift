@@ -38,7 +38,8 @@ final class EngineCoordinator: ObservableObject {
         hotkeyListener.updateBindings(
             shortcuts: configManager.config.shortcuts,
             customZones: configManager.config.customZones,
-            overlayShortcut: configManager.config.general.overlayShortcut
+            overlayShortcut: configManager.config.general.overlayShortcut,
+            resetPinsShortcut: configManager.config.general.resetPinsShortcut
         )
         let bindingCount = configManager.config.shortcuts.filter { $0.enabled && $0.keyCombo != nil }.count
         wranglerLog("Wrangler: Loaded \(bindingCount) hotkey bindings")
@@ -49,7 +50,8 @@ final class EngineCoordinator: ObservableObject {
                 self?.hotkeyListener.updateBindings(
                     shortcuts: config.shortcuts,
                     customZones: config.customZones,
-                    overlayShortcut: config.general.overlayShortcut
+                    overlayShortcut: config.general.overlayShortcut,
+                    resetPinsShortcut: config.general.resetPinsShortcut
                 )
                 wranglerLog("Wrangler: Updated hotkey bindings")
             }
@@ -66,6 +68,9 @@ final class EngineCoordinator: ObservableObject {
             case .customZone(let zoneID):
                 wranglerLog("Wrangler: Custom zone triggered: \(zoneID)")
                 self.snapToCustomZone(id: zoneID, config: config)
+            case .resetPins:
+                guard let config = self.configManager?.config else { return }
+                self.resetAllPins(config: config)
             case .overlay:
                 guard let cm = self.configManager else { return }
                 self.toggleOverlay(configManager: cm)
@@ -273,6 +278,64 @@ final class EngineCoordinator: ObservableObject {
         )
 
         windowManager.setWindowFrame(window, frame: newFrame)
+    }
+
+    // MARK: - App Pins
+
+    func resetAllPins(config: WranglerConfig) {
+        for pin in config.appPins {
+            // Find the app by bundle ID
+            guard let app = NSWorkspace.shared.runningApplications.first(where: { $0.bundleIdentifier == pin.bundleID }) else {
+                continue
+            }
+            let windows = windowManager.getAllWindows(forPID: app.processIdentifier)
+            guard !windows.isEmpty else { continue }
+
+            // Resolve display ID (with name fallback)
+            let targetDisplayID: UInt32
+            if displayDetector.displays.contains(where: { $0.id == pin.displayID }) {
+                targetDisplayID = pin.displayID
+            } else if let match = displayDetector.displays.first(where: { $0.name == pin.displayName }) {
+                targetDisplayID = match.id
+            } else {
+                continue
+            }
+
+            let displayConfig = config.displays.first { $0.displayID == targetDisplayID }
+            let columns = displayConfig?.columns ?? 4
+            let rows = displayConfig?.rows ?? 4
+            let gap = displayConfig?.gap ?? 0
+
+            guard let visibleFrame = displayDetector.visibleFrame(for: targetDisplayID) else { continue }
+
+            let frame = GridCalculator.calculateFrame(
+                for: pin.gridPosition, in: visibleFrame,
+                gridColumns: columns, gridRows: rows, gap: gap
+            )
+
+            // If multiple windows, tile them in the zone
+            if windows.count == 1 {
+                windowManager.setWindowFrame(windows[0], frame: frame)
+            } else {
+                let tileCols = min(windows.count, max(1, pin.columnSpan))
+                let tileRows = Int(ceil(Double(windows.count) / Double(tileCols)))
+                let tileWidth = frame.width / CGFloat(tileCols)
+                let tileHeight = frame.height / CGFloat(tileRows)
+                for (index, window) in windows.enumerated() {
+                    let col = index % tileCols
+                    let row = index / tileCols
+                    let f = CGRect(
+                        x: frame.origin.x + CGFloat(col) * tileWidth,
+                        y: frame.origin.y + CGFloat(row) * tileHeight,
+                        width: tileWidth,
+                        height: tileHeight
+                    )
+                    windowManager.setWindowFrame(window, frame: f)
+                }
+            }
+            wranglerLog("Wrangler: Reset pin '\(pin.appName)' to \(pin.column),\(pin.row)")
+        }
+        wranglerLog("Wrangler: Reset all pins (\(config.appPins.count) pins)")
     }
 
     // MARK: - Custom Zones

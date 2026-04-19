@@ -20,12 +20,14 @@ struct GeneralConfig: Codable, Equatable {
     var autoShowOverlay: Bool = false
     var showLivePreview: Bool = true
     var autoHideOverlayDelay: Double = 3.0
+    var resetPinsShortcut: KeyCombo? = KeyCombo(keyCode: 0x0F, control: true, option: true, shift: false, command: false) // Ctrl+Alt+R
 }
 
 struct WranglerConfig: Codable, Equatable {
     var general: GeneralConfig = GeneralConfig()
     var displays: [DisplayConfig] = []
     var customZones: [CustomZone] = []
+    var appPins: [AppPin] = []
     // Default shortcuts use Ctrl+Alt (⌃⌥) as the base modifier for cross-keyboard compat.
     // Quarters use UIJK keys which form a spatial 2x2 grid on the keyboard: U I / J K
     // Display switching uses Ctrl+Cmd (⌃⌘) = Ctrl+Win on Windows keyboards.

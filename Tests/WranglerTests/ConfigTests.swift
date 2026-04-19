@@ -121,4 +121,21 @@ final class ConfigTests: XCTestCase {
         XCTAssertEqual(pos.columnSpan, 3)
         XCTAssertEqual(pos.rowSpan, 2)
     }
+
+    // MARK: - AppPin Tests
+
+    func testAppPinRoundTrip() throws {
+        let pin = AppPin(bundleID: "com.test.app", appName: "Test", displayID: 1, displayName: "Main", column: 2, row: 1, columnSpan: 2, rowSpan: 2)
+        let data = try JSONEncoder().encode(pin)
+        let decoded = try JSONDecoder().decode(AppPin.self, from: data)
+        XCTAssertEqual(decoded.bundleID, "com.test.app")
+        XCTAssertEqual(decoded.columnSpan, 2)
+        XCTAssertEqual(decoded.id, pin.id)
+    }
+
+    func testAppPinSpanClamping() {
+        let pin = AppPin(bundleID: "com.test", appName: "Test", displayID: 1, displayName: "Main", column: 0, row: 0, columnSpan: 0, rowSpan: -1)
+        XCTAssertEqual(pin.columnSpan, 1)
+        XCTAssertEqual(pin.rowSpan, 1)
+    }
 }

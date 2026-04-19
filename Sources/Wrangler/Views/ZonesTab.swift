@@ -4,6 +4,7 @@
 // display, grid position, shortcut binding, rename, and delete.
 // Compact card layout with inline editing.
 
+import AppKit
 import SwiftUI
 
 struct ZonesTab: View {
@@ -71,9 +72,54 @@ struct ZonesTab: View {
                 }
                 .padding(.horizontal, 24)
                 .padding(.vertical, 14)
-
-                Spacer(minLength: 0)
             }
+
+            // MARK: - Pinned Apps
+            VStack(alignment: .leading, spacing: 8) {
+                HStack {
+                    Text("Pinned Apps")
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundStyle(.secondary)
+                        .textCase(.uppercase)
+                    Spacer()
+                    Button(action: { pinCurrentApp() }) {
+                        Label("Pin Current App", systemImage: "plus")
+                            .font(.system(size: 11))
+                    }
+                }
+
+                if configManager.config.appPins.isEmpty {
+                    HStack {
+                        Spacer()
+                        VStack(spacing: 4) {
+                            Text("No apps pinned")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                            Text("Pin an app to always restore it to a specific position.")
+                                .font(.caption2)
+                                .foregroundStyle(.tertiary)
+                        }
+                        Spacer()
+                    }
+                    .padding(.vertical, 12)
+                    .background(Color(nsColor: .controlBackgroundColor))
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                } else {
+                    VStack(spacing: 0) {
+                        ForEach(Array(configManager.config.appPins.enumerated()), id: \.element.id) { idx, pin in
+                            if idx > 0 { Divider().padding(.horizontal, 10) }
+                            pinRow(for: pin)
+                        }
+                    }
+                    .background(Color(nsColor: .controlBackgroundColor))
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                    .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(Color.primary.opacity(0.06)))
+                }
+            }
+            .padding(.horizontal, 24)
+            .padding(.vertical, 14)
+
+            Spacer(minLength: 0)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
@@ -133,5 +179,69 @@ struct ZonesTab: View {
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 5)
+    }
+
+    @ViewBuilder
+    private func pinRow(for pin: AppPin) -> some View {
+        HStack(spacing: 8) {
+            if let appURL = NSWorkspace.shared.urlForApplication(withBundleIdentifier: pin.bundleID) {
+                Image(nsImage: NSWorkspace.shared.icon(forFile: appURL.path))
+                    .resizable()
+                    .frame(width: 20, height: 20)
+            }
+
+            VStack(alignment: .leading, spacing: 1) {
+                Text(pin.appName)
+                    .font(.system(size: 12, weight: .medium))
+                Text("\(pin.displayName) — Col \(pin.column)–\(pin.column + pin.columnSpan - 1), Row \(pin.row)–\(pin.row + pin.rowSpan - 1)")
+                    .font(.system(size: 10))
+                    .foregroundStyle(.secondary)
+            }
+
+            Spacer()
+
+            Button(action: {
+                configManager.config.appPins.removeAll { $0.id == pin.id }
+                configManager.save()
+            }) {
+                Image(systemName: "trash")
+                    .foregroundStyle(.red)
+                    .imageScale(.small)
+            }
+            .buttonStyle(.borderless)
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 5)
+    }
+
+    private func pinCurrentApp() {
+        guard let frontApp = NSWorkspace.shared.frontmostApplication,
+              let bundleID = frontApp.bundleIdentifier else { return }
+
+        // Don't pin Wrangler itself
+        guard bundleID != Bundle.main.bundleIdentifier else { return }
+
+        // Check if already pinned
+        if configManager.config.appPins.contains(where: { $0.bundleID == bundleID }) {
+            return
+        }
+
+        let display = NSScreen.screens.first
+        let displayID = display?.displayID ?? 0
+        let displayName = display?.localizedName ?? "Unknown"
+        let displayConfig = configManager.config.displays.first { $0.displayID == displayID }
+
+        let pin = AppPin(
+            bundleID: bundleID,
+            appName: frontApp.localizedName ?? "Unknown",
+            displayID: displayID,
+            displayName: displayName,
+            column: 0,
+            row: 0,
+            columnSpan: displayConfig?.columns ?? 4,
+            rowSpan: displayConfig?.rows ?? 4
+        )
+        configManager.config.appPins.append(pin)
+        configManager.save()
     }
 }
