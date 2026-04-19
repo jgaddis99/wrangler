@@ -69,4 +69,10 @@ final class GridOverlayPanel: NSPanel {
     func hideOverlay() {
         orderOut(nil)
     }
+
+    override func resignKey() {
+        super.resignKey()
+        // Auto-dismiss when the panel loses key status (user clicked elsewhere)
+        hideOverlay()
+    }
 }

@@ -90,6 +90,14 @@ final class EngineCoordinator: ObservableObject {
             moveFocusedWindowToNextDisplay(config: config)
         case .previousDisplay:
             moveFocusedWindowToPreviousDisplay(config: config)
+        case .snapLeft:
+            moveWindowInGrid(direction: .left, config: config)
+        case .snapRight:
+            moveWindowInGrid(direction: .right, config: config)
+        case .snapTopHalf:
+            moveWindowInGrid(direction: .up, config: config)
+        case .snapBottomHalf:
+            moveWindowInGrid(direction: .down, config: config)
         default:
             snapFocusedWindow(action: action, config: config)
         }
@@ -100,6 +108,53 @@ final class EngineCoordinator: ObservableObject {
     }
 
     // MARK: - Private
+
+    private enum GridDirection { case left, right, up, down }
+
+    /// Snaps the focused window to a single grid cell and moves it directionally.
+    /// First press: snaps to the nearest single cell. Subsequent presses: move one cell.
+    private func moveWindowInGrid(direction: GridDirection, config: WranglerConfig) {
+        guard case .success(let window) = windowManager.getFocusedWindow() else { return }
+        guard let currentDisplayID = windowManager.displayID(for: window) else { return }
+
+        let displayConfig = config.displays.first { $0.displayID == currentDisplayID }
+        let columns = displayConfig?.columns ?? 4
+        let rows = displayConfig?.rows ?? 4
+        let gap = displayConfig?.gap ?? 0
+
+        guard let visibleFrame = displayDetector.visibleFrame(for: currentDisplayID),
+              let windowFrame = windowManager.getWindowFrame(window) else { return }
+
+        // Calculate cell dimensions
+        let gapF = CGFloat(gap)
+        let totalGapX = gapF * CGFloat(columns - 1)
+        let totalGapY = gapF * CGFloat(rows - 1)
+        let cellWidth = (visibleFrame.width - totalGapX) / CGFloat(columns)
+        let cellHeight = (visibleFrame.height - totalGapY) / CGFloat(rows)
+
+        // Find which cell the window currently occupies (nearest cell to window center)
+        let centerX = windowFrame.origin.x + windowFrame.width / 2
+        let centerY = windowFrame.origin.y + windowFrame.height / 2
+        var col = Int((centerX - visibleFrame.origin.x) / (cellWidth + gapF))
+        var row = Int((centerY - visibleFrame.origin.y) / (cellHeight + gapF))
+        col = max(0, min(col, columns - 1))
+        row = max(0, min(row, rows - 1))
+
+        // Move one cell in the direction
+        switch direction {
+        case .left:  col = max(0, col - 1)
+        case .right: col = min(columns - 1, col + 1)
+        case .up:    row = max(0, row - 1)
+        case .down:  row = min(rows - 1, row + 1)
+        }
+
+        let position = GridPosition(column: col, row: row, columnSpan: 1, rowSpan: 1)
+        let frame = GridCalculator.calculateFrame(
+            for: position, in: visibleFrame,
+            gridColumns: columns, gridRows: rows, gap: gap
+        )
+        windowManager.setWindowFrame(window, frame: frame)
+    }
 
     private func snapFocusedWindow(action: WranglerAction, config: WranglerConfig) {
         guard case .success(let window) = windowManager.getFocusedWindow() else { return }

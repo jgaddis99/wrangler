@@ -13,11 +13,13 @@ struct WranglerApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
 
     var body: some Scene {
-        Settings {
+        Window("Wrangler Settings", id: "settings") {
             SettingsView(
                 configManager: appDelegate.configManager,
                 displayDetector: appDelegate.engine.displayDetector
             )
         }
+        .windowResizability(.contentSize)
+        .defaultPosition(.center)
     }
 }

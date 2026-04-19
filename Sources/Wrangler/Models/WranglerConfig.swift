@@ -17,7 +17,7 @@ struct GeneralConfig: Codable, Equatable {
     var globalShortcut: KeyCombo? = nil
     var hideMenuBarIcon: Bool = false
     var overlayShortcut: KeyCombo? = KeyCombo(keyCode: 0x31, control: true, option: true, shift: false, command: false) // Ctrl+Alt+Space
-    var autoShowOverlay: Bool = true
+    var autoShowOverlay: Bool = false
     var showLivePreview: Bool = true
     var autoHideOverlayDelay: Double = 3.0
 }
@@ -30,7 +30,7 @@ struct WranglerConfig: Codable, Equatable {
     // Quarters use UIJK keys which form a spatial 2x2 grid on the keyboard: U I / J K
     // Display switching uses Ctrl+Cmd (⌃⌘) = Ctrl+Win on Windows keyboards.
     var shortcuts: [ActionShortcut] = [
-        // Halves: Ctrl+Alt+Arrow (Ctrl+Alt+Arrow on Windows KB)
+        // Grid movement: Ctrl+Alt+Arrow — snap to one cell and move directionally
         ActionShortcut(action: .snapLeft, keyCombo: KeyCombo(keyCode: 0x7B, control: true, option: true, shift: false, command: false), enabled: true),
         ActionShortcut(action: .snapRight, keyCombo: KeyCombo(keyCode: 0x7C, control: true, option: true, shift: false, command: false), enabled: true),
         ActionShortcut(action: .snapTopHalf, keyCombo: KeyCombo(keyCode: 0x7E, control: true, option: true, shift: false, command: false), enabled: true),

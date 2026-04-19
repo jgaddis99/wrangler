@@ -28,9 +28,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if !UserDefaults.standard.bool(forKey: hasLaunchedKey) {
             UserDefaults.standard.set(true, forKey: hasLaunchedKey)
             // Open settings on first launch so user knows the app is running
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                NSApp.activate()
-                NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
+                self?.openSettings()
             }
         }
 
@@ -126,7 +125,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     @objc private func openSettings() {
         NSApp.activate()
-        NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
+        // Find the settings window by title and bring it forward, or create it
+        if let window = NSApp.windows.first(where: { $0.title == "Wrangler Settings" }) {
+            window.makeKeyAndOrderFront(nil)
+        } else {
+            // Trigger SwiftUI to open the window via environment action
+            NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
+            // Fallback for older macOS
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                NSApp.sendAction(Selector(("showPreferencesWindow:")), to: nil, from: nil)
+            }
+        }
     }
 
     @objc private func quitApp() {
