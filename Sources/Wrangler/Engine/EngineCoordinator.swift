@@ -30,6 +30,7 @@ final class EngineCoordinator: ObservableObject {
     private var overlayTriggeredManually = false
     private var capturedWindow: AXUIElement?  // Window captured before overlay opens
     private var capturedAppPID: pid_t?        // App PID captured before overlay opens
+    private var undoStack: [(window: AXUIElement, frame: CGRect)] = []  // Last snap positions for undo
 
     func start(configManager: ConfigManager) {
         self.configManager = configManager
@@ -113,6 +114,8 @@ final class EngineCoordinator: ObservableObject {
             growWindowInGrid(direction: .down, config: config)
         case .autoTileDisplay:
             autoTileCurrentDisplay(config: config)
+        case .undoSnap:
+            undoLastSnap()
         default:
             snapFocusedWindow(action: action, config: config)
         }
@@ -125,6 +128,32 @@ final class EngineCoordinator: ObservableObject {
     // MARK: - Private
 
     private enum GridDirection { case left, right, up, down }
+
+    /// Snap a window to a frame, saving the current position for undo.
+    private func snapWindow(_ window: AXUIElement, to frame: CGRect) {
+        saveForUndo(window)
+        snapWindow(window, to: frame)
+    }
+
+    /// Save the current window frame before snapping so we can undo.
+    private func saveForUndo(_ window: AXUIElement) {
+        if let frame = windowManager.getWindowFrame(window) {
+            undoStack.append((window: window, frame: frame))
+            // Keep stack reasonable — max 20 entries
+            if undoStack.count > 20 { undoStack.removeFirst() }
+        }
+    }
+
+    /// Restore the last snapped window to its previous position.
+    private func undoLastSnap() {
+        guard let last = undoStack.popLast() else {
+            wranglerLog("Wrangler: Nothing to undo")
+            return
+        }
+        // Use windowManager directly — don't save the undo itself as undoable
+        windowManager.setWindowFrame(last.window, frame: last.frame)
+        wranglerLog("Wrangler: Undid last snap")
+    }
 
     /// Snaps the focused window to a single grid cell and moves it directionally.
     /// First press: snaps to the nearest single cell. Subsequent presses: move one cell.
@@ -211,7 +240,7 @@ final class EngineCoordinator: ObservableObject {
             for: position, in: targetFrame,
             gridColumns: targetColumns, gridRows: targetRows, gap: targetGap
         )
-        windowManager.setWindowFrame(window, frame: frame)
+        snapWindow(window, to: frame)
     }
 
     /// Grows the focused window by one grid cell in the specified direction.
@@ -264,7 +293,7 @@ final class EngineCoordinator: ObservableObject {
             for: position, in: visibleFrame,
             gridColumns: columns, gridRows: rows, gap: gap
         )
-        windowManager.setWindowFrame(window, frame: frame)
+        snapWindow(window, to: frame)
     }
 
     private func autoTileCurrentDisplay(config: WranglerConfig) {
@@ -310,7 +339,7 @@ final class EngineCoordinator: ObservableObject {
                 width: tileWidth,
                 height: tileHeight
             )
-            windowManager.setWindowFrame(window, frame: frame)
+            snapWindow(window, to: frame)
         }
         wranglerLog("Wrangler: Auto-tiled \(n) windows in \(tileCols)x\(tileRows) grid on display \(displayID)")
     }
@@ -349,7 +378,7 @@ final class EngineCoordinator: ObservableObject {
             gridColumns: columns, gridRows: rows, gap: gap
         )
 
-        windowManager.setWindowFrame(window, frame: frame)
+        snapWindow(window, to: frame)
     }
 
     private func centerFocusedWindow() {
@@ -361,7 +390,7 @@ final class EngineCoordinator: ObservableObject {
         let centered = GridCalculator.centerFrame(
             windowSize: windowFrame.size, in: visibleFrame
         )
-        windowManager.setWindowFrame(window, frame: centered)
+        snapWindow(window, to: centered)
     }
 
     private func moveFocusedWindowToNextDisplay(config: WranglerConfig) {
@@ -402,7 +431,7 @@ final class EngineCoordinator: ObservableObject {
             height: relH * targetFrame.height
         )
 
-        windowManager.setWindowFrame(window, frame: newFrame)
+        snapWindow(window, to: newFrame)
     }
 
     // MARK: - App Pins
@@ -490,7 +519,7 @@ final class EngineCoordinator: ObservableObject {
             for: zone.gridPosition, in: visibleFrame,
             gridColumns: columns, gridRows: rows, gap: gap
         )
-        windowManager.setWindowFrame(window, frame: frame)
+        snapWindow(window, to: frame)
     }
 
     /// Tile all windows of the captured app evenly within the selected grid zone.
@@ -535,7 +564,7 @@ final class EngineCoordinator: ObservableObject {
                 width: tileWidth,
                 height: tileHeight
             )
-            windowManager.setWindowFrame(window, frame: frame)
+            snapWindow(window, to: frame)
         }
         wranglerLog("Wrangler: Batch-tiled \(windowCount) windows into \(tileCols)x\(tileRows) grid")
     }
@@ -572,7 +601,7 @@ final class EngineCoordinator: ObservableObject {
                 width: tileWidth,
                 height: tileHeight
             )
-            windowManager.setWindowFrame(window, frame: frame)
+            snapWindow(window, to: frame)
         }
         wranglerLog("Wrangler: Menu batch-tiled \(windowCount) windows for PID \(pid)")
     }
@@ -598,7 +627,7 @@ final class EngineCoordinator: ObservableObject {
             for: position, in: visibleFrame,
             gridColumns: columns, gridRows: rows, gap: gap
         )
-        windowManager.setWindowFrame(window, frame: frame)
+        snapWindow(window, to: frame)
     }
 
     // MARK: - Overlay

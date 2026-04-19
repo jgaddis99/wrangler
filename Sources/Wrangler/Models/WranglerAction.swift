@@ -27,6 +27,7 @@ enum WranglerAction: String, Codable, CaseIterable, Identifiable {
     case nextDisplay
     case previousDisplay
     case autoTileDisplay
+    case undoSnap
 
     var id: String { rawValue }
 
@@ -52,6 +53,7 @@ enum WranglerAction: String, Codable, CaseIterable, Identifiable {
         case .nextDisplay: "Next Display"
         case .previousDisplay: "Previous Display"
         case .autoTileDisplay: "Auto-Tile Display"
+        case .undoSnap: "Undo Snap"
         }
     }
 
@@ -77,6 +79,7 @@ enum WranglerAction: String, Codable, CaseIterable, Identifiable {
         case .nextDisplay: "rectangle.righthalf.inset.arrow.right"
         case .previousDisplay: "rectangle.lefthalf.inset.arrow.left"
         case .autoTileDisplay: "square.grid.2x2"
+        case .undoSnap: "arrow.uturn.backward"
         }
     }
 }
