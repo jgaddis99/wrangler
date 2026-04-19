@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wrangler — Free macOS Window Manager | Snap, Tile, Organize</title>
+    <meta name="description" content="Wrangler is a free, open-source macOS window manager. Snap windows to configurable grids, batch-tile terminals, and organize multi-monitor setups with keyboard shortcuts.">
+    <meta name="keywords" content="macOS window manager, free window manager, tiling window manager, snap windows, grid window manager, Rectangle alternative, Magnet alternative, ultrawide monitor, terminal tiling">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Wrangler — Free macOS Window Manager">
+    <meta property="og:description" content="Snap windows to configurable grids, batch-tile terminals, visual overlay with drag-to-snap. Free and open source.">
+    <meta property="og:url" content="https://jgaddis99.github.io/wrangler">
+    <meta property="og:image" content="https://raw.githubusercontent.com/jgaddis99/wrangler/master/screenshots/overlay.png">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Wrangler — Free macOS Window Manager">
+    <meta name="twitter:description" content="Snap windows to grids, batch-tile terminals, visual overlay. Free and open source.">
+    <meta name="twitter:image" content="https://raw.githubusercontent.com/jgaddis99/wrangler/master/screenshots/overlay.png">
+
+    <!-- Canonical -->
+    <link rel="canonical" href="https://jgaddis99.github.io/wrangler">
+
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "Wrangler",
+        "operatingSystem": "macOS",
+        "applicationCategory": "UtilitiesApplication",
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+        },
+        "description": "A free, open-source macOS window manager that snaps windows to configurable grids with keyboard shortcuts and a visual overlay.",
+        "downloadUrl": "https://github.com/jgaddis99/wrangler/releases",
+        "softwareVersion": "0.1.2",
+        "author": {
+            "@type": "Person",
+            "name": "Jason Gaddis"
+        },
+        "license": "https://opensource.org/licenses/MIT"
+    }
+    </script>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg-deep: #0a0e17;
+            --bg-card: #111827;
+            --bg-card-hover: #1a2332;
+            --accent: #3b82f6;
+            --accent-glow: rgba(59, 130, 246, 0.15);
+            --accent-dim: rgba(59, 130, 246, 0.4);
+            --text: #e2e8f0;
+            --text-dim: #94a3b8;
+            --text-muted: #64748b;
+            --border: rgba(255, 255, 255, 0.06);
+            --gold: #d4a847;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg-deep);
+            color: var(--text);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Noise texture overlay */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        /* Grid background pattern */
+        .grid-bg {
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(59, 130, 246, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(59, 130, 246, 0.03) 1px, transparent 1px);
+            background-size: 60px 60px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 24px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ===== NAV ===== */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            padding: 16px 0;
+            background: rgba(10, 14, 23, 0.85);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+        }
+
+        nav .container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            color: var(--text);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--accent), #6366f1);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo-icon svg { width: 18px; height: 18px; }
+
+        .nav-links {
+            display: flex;
+            gap: 32px;
+            align-items: center;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--text-dim);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover { color: var(--text); }
+
+        .btn-download {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: var(--accent);
+            color: white;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-download:hover {
+            background: #2563eb;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 20px var(--accent-glow);
+        }
+
+        /* ===== HERO ===== */
+        .hero {
+            padding: 160px 0 80px;
+            text-align: center;
+            position: relative;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 16px;
+            background: var(--accent-glow);
+            border: 1px solid var(--accent-dim);
+            border-radius: 100px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--accent);
+            margin-bottom: 24px;
+            animation: fadeInUp 0.6s ease;
+        }
+
+        .hero h1 {
+            font-size: clamp(40px, 6vw, 72px);
+            font-weight: 700;
+            letter-spacing: -2px;
+            line-height: 1.1;
+            margin-bottom: 20px;
+            animation: fadeInUp 0.6s ease 0.1s both;
+        }
+
+        .hero h1 span {
+            background: linear-gradient(135deg, var(--accent), #818cf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            font-size: 18px;
+            color: var(--text-dim);
+            max-width: 560px;
+            margin: 0 auto 40px;
+            animation: fadeInUp 0.6s ease 0.2s both;
+        }
+
+        .hero-actions {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+            animation: fadeInUp 0.6s ease 0.3s both;
+        }
+
+        .btn-secondary {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: transparent;
+            color: var(--text-dim);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .btn-secondary:hover {
+            color: var(--text);
+            border-color: var(--text-muted);
+            background: var(--bg-card);
+        }
+
+        /* ===== HERO IMAGE ===== */
+        .hero-image {
+            margin: 60px auto 0;
+            max-width: 900px;
+            position: relative;
+            animation: fadeInUp 0.8s ease 0.4s both;
+        }
+
+        .hero-image img {
+            width: 100%;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            box-shadow:
+                0 20px 60px rgba(0, 0, 0, 0.5),
+                0 0 120px var(--accent-glow);
+        }
+
+        .hero-image::before {
+            content: '';
+            position: absolute;
+            inset: -1px;
+            border-radius: 13px;
+            background: linear-gradient(135deg, var(--accent-dim), transparent 50%);
+            z-index: -1;
+        }
+
+        /* ===== FEATURES ===== */
+        .features {
+            padding: 100px 0;
+        }
+
+        .section-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin-bottom: 12px;
+        }
+
+        .section-title {
+            font-size: 36px;
+            font-weight: 700;
+            letter-spacing: -1px;
+            margin-bottom: 48px;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .feature-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 28px;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .feature-card:hover {
+            background: var(--bg-card-hover);
+            border-color: var(--accent-dim);
+            transform: translateY(-2px);
+        }
+
+        .feature-card:hover::before { opacity: 1; }
+
+        .feature-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--accent-glow);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+            font-size: 20px;
+        }
+
+        .feature-card h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .feature-card p {
+            font-size: 14px;
+            color: var(--text-dim);
+            line-height: 1.6;
+        }
+
+        /* ===== SHORTCUTS ===== */
+        .shortcuts {
+            padding: 80px 0;
+        }
+
+        .shortcut-table {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            width: 100%;
+        }
+
+        .shortcut-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .shortcut-table th {
+            text-align: left;
+            padding: 14px 24px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 1px solid var(--border);
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .shortcut-table td {
+            padding: 12px 24px;
+            font-size: 14px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .shortcut-table tr:last-child td { border-bottom: none; }
+
+        .shortcut-table tr:hover td { background: rgba(59, 130, 246, 0.03); }
+
+        kbd {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid var(--accent-dim);
+            border-radius: 4px;
+            padding: 2px 8px;
+            color: var(--accent);
+            white-space: nowrap;
+        }
+
+        /* ===== SCREENSHOTS ===== */
+        .screenshots {
+            padding: 80px 0;
+        }
+
+        .screenshot-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        .screenshot-grid img {
+            width: 100%;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s;
+        }
+
+        .screenshot-grid img:hover { transform: scale(1.02); }
+
+        .screenshot-caption {
+            font-size: 13px;
+            color: var(--text-muted);
+            text-align: center;
+            margin-top: 8px;
+        }
+
+        /* ===== KEYBOARD ===== */
+        .keyboard-section {
+            padding: 80px 0;
+            text-align: center;
+        }
+
+        .keyboard-visual {
+            display: inline-grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-top: 32px;
+            padding: 24px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+        }
+
+        .key {
+            width: 64px;
+            height: 56px;
+            background: linear-gradient(180deg, #1e293b, #0f172a);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-dim);
+            transition: all 0.2s;
+            cursor: default;
+        }
+
+        .key:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            box-shadow: 0 0 20px var(--accent-glow);
+            transform: translateY(-2px);
+        }
+
+        .key small {
+            font-size: 9px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        /* ===== CTA ===== */
+        .cta {
+            padding: 100px 0;
+            text-align: center;
+        }
+
+        .cta-box {
+            background: linear-gradient(135deg, var(--bg-card), rgba(59, 130, 246, 0.05));
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 60px 40px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta-box::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, var(--accent-glow), transparent 70%);
+            pointer-events: none;
+        }
+
+        .cta-box h2 {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            position: relative;
+        }
+
+        .cta-box p {
+            color: var(--text-dim);
+            margin-bottom: 32px;
+            position: relative;
+        }
+
+        .cta-box .btn-download { position: relative; font-size: 16px; padding: 14px 28px; }
+
+        /* ===== FOOTER ===== */
+        footer {
+            padding: 40px 0;
+            border-top: 1px solid var(--border);
+            text-align: center;
+        }
+
+        footer p {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        footer a {
+            color: var(--text-dim);
+            text-decoration: none;
+        }
+
+        footer a:hover { color: var(--accent); }
+
+        /* ===== ANIMATIONS ===== */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .reveal {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.6s ease;
+        }
+
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            .feature-grid { grid-template-columns: 1fr; }
+            .screenshot-grid { grid-template-columns: 1fr; }
+            .nav-links { display: none; }
+            .keyboard-visual { grid-template-columns: repeat(2, 1fr); }
+            .hero h1 { font-size: 36px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="grid-bg"></div>
+
+    <!-- Nav -->
+    <nav>
+        <div class="container">
+            <a href="#" class="logo">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                        <rect x="3" y="3" width="7" height="7" rx="1"/>
+                        <rect x="14" y="3" width="7" height="7" rx="1"/>
+                        <rect x="3" y="14" width="7" height="7" rx="1"/>
+                        <rect x="14" y="14" width="7" height="7" rx="1"/>
+                    </svg>
+                </div>
+                Wrangler
+            </a>
+            <ul class="nav-links">
+                <li><a href="#features">Features</a></li>
+                <li><a href="#shortcuts">Shortcuts</a></li>
+                <li><a href="#screenshots">Screenshots</a></li>
+                <li><a href="https://github.com/jgaddis99/wrangler">GitHub</a></li>
+                <li><a href="https://github.com/jgaddis99/wrangler/releases" class="btn-download">Download</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-badge">Free &amp; Open Source</div>
+            <h1>Wrangle your <span>windows.</span></h1>
+            <p>A macOS window manager that snaps windows to configurable grids. Built for developers and power users who run multiple terminals across ultrawide monitors.</p>
+            <div class="hero-actions">
+                <a href="https://github.com/jgaddis99/wrangler/releases" class="btn-download">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+                    Download for macOS
+                </a>
+                <a href="https://github.com/jgaddis99/wrangler" class="btn-secondary">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+                    View on GitHub
+                </a>
+            </div>
+            <div class="hero-image">
+                <img src="https://raw.githubusercontent.com/jgaddis99/wrangler/master/screenshots/overlay.png" alt="Wrangler visual grid overlay showing two ultrawide monitors with wallpaper backgrounds and grid lines for window snapping">
+            </div>
+        </div>
+    </section>
+
+    <!-- Features -->
+    <section class="features" id="features">
+        <div class="container">
+            <div class="section-label reveal">Features</div>
+            <h2 class="section-title reveal">Everything you need to manage windows.</h2>
+            <div class="feature-grid">
+                <div class="feature-card reveal">
+                    <div class="feature-icon">&#x2B1C;</div>
+                    <h3>Grid Snapping</h3>
+                    <p>Move windows one cell at a time with arrow keys. Grow or shrink by adding cells. Snap to halves, quarters, or thirds instantly.</p>
+                </div>
+                <div class="feature-card reveal">
+                    <div class="feature-icon">&#x1F5BC;</div>
+                    <h3>Visual Overlay</h3>
+                    <p>See all your displays with wallpapers and grid lines. Drag to select any zone. Live preview shows exactly where the window will land.</p>
+                </div>
+                <div class="feature-card reveal">
+                    <div class="feature-icon">&#x26A1;</div>
+                    <h3>Batch Tile</h3>
+                    <p>Cmd+drag on the overlay to tile all windows of an app at once. Perfect for organizing a dozen terminal windows in seconds.</p>
+                </div>
+                <div class="feature-card reveal">
+                    <div class="feature-icon">&#x1F4CC;</div>
+                    <h3>App Pinning</h3>
+                    <p>Pin Slack, Mail, or Discord to fixed positions. One shortcut resets all pinned apps to their designated spots when things get messy.</p>
+                </div>
+                <div class="feature-card reveal">
+                    <div class="feature-icon">&#x2328;</div>
+                    <h3>Cross-Keyboard</h3>
+                    <p>Uses Ctrl+Alt as the base modifier &mdash; same physical keys on Mac and Windows keyboards. Switch between keyboards without relearning shortcuts.</p>
+                </div>
+                <div class="feature-card reveal">
+                    <div class="feature-icon">&#x1F504;</div>
+                    <h3>Auto-Update</h3>
+                    <p>Built-in update checking via Sparkle. Get new features automatically without checking GitHub. No account or subscription required.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Shortcuts -->
+    <section class="shortcuts" id="shortcuts">
+        <div class="container">
+            <div class="section-label reveal">Keyboard Shortcuts</div>
+            <h2 class="section-title reveal">Learn once, use forever.</h2>
+            <div class="shortcut-table reveal">
+                <table>
+                    <thead>
+                        <tr><th>Shortcut</th><th>Action</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><kbd>Ctrl+Alt+Arrow</kbd></td><td>Move window one grid cell</td></tr>
+                        <tr><td><kbd>Ctrl+Alt+Shift+Arrow</kbd></td><td>Grow window one cell in that direction</td></tr>
+                        <tr><td><kbd>Ctrl+Alt+U</kbd> <kbd>I</kbd> <kbd>J</kbd> <kbd>K</kbd></td><td>Snap to quarter (spatial 2x2 on keyboard)</td></tr>
+                        <tr><td><kbd>Ctrl+Alt+1</kbd> <kbd>2</kbd> <kbd>3</kbd></td><td>Snap to left / center / right third</td></tr>
+                        <tr><td><kbd>Ctrl+Alt+Enter</kbd></td><td>Maximize</td></tr>
+                        <tr><td><kbd>Ctrl+Alt+C</kbd></td><td>Center on display</td></tr>
+                        <tr><td><kbd>Ctrl+Alt+T</kbd></td><td>Auto-tile all windows on display</td></tr>
+                        <tr><td><kbd>Ctrl+Alt+Z</kbd></td><td>Undo last snap</td></tr>
+                        <tr><td><kbd>Ctrl+Alt+Space</kbd></td><td>Open visual grid overlay</td></tr>
+                        <tr><td><kbd>Ctrl+Alt+R</kbd></td><td>Reset all pinned apps</td></tr>
+                        <tr><td><kbd>Ctrl+Cmd+Arrow</kbd></td><td>Move to adjacent display</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <p style="text-align:center; margin-top:16px; color:var(--text-muted); font-size:14px;">All shortcuts are fully customizable in Settings.</p>
+        </div>
+    </section>
+
+    <!-- Screenshots -->
+    <section class="screenshots" id="screenshots">
+        <div class="container">
+            <div class="section-label reveal">See It In Action</div>
+            <h2 class="section-title reveal">Designed for your workflow.</h2>
+            <div class="screenshot-grid reveal">
+                <div>
+                    <img src="https://raw.githubusercontent.com/jgaddis99/wrangler/master/screenshots/settings.png" alt="Wrangler settings window showing General tab with system preferences, grid overlay configuration, and behavior settings">
+                    <p class="screenshot-caption">Settings &mdash; configure everything</p>
+                </div>
+                <div>
+                    <img src="https://raw.githubusercontent.com/jgaddis99/wrangler/master/screenshots/menu-bar.png" alt="Wrangler menu bar dropdown showing window management actions, tile options, and settings access">
+                    <p class="screenshot-caption">Menu bar &mdash; quick access to actions</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- UIJK Keyboard Visual -->
+    <section class="keyboard-section" id="keyboard">
+        <div class="container">
+            <div class="section-label reveal">Quarter Snapping</div>
+            <h2 class="section-title reveal">Your keyboard is the grid.</h2>
+            <p style="color:var(--text-dim); max-width:480px; margin:0 auto;" class="reveal">The U, I, J, K keys form a natural 2&times;2 grid on your keyboard. Each key maps to a screen quarter.</p>
+            <div class="keyboard-visual reveal">
+                <div class="key">U<small>Top Left</small></div>
+                <div class="key">I<small>Top Right</small></div>
+                <div class="key">J<small>Bot Left</small></div>
+                <div class="key">K<small>Bot Right</small></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="cta">
+        <div class="container">
+            <div class="cta-box reveal">
+                <h2>Ready to wrangle?</h2>
+                <p>Free, open source, no account required. Just download and go.</p>
+                <a href="https://github.com/jgaddis99/wrangler/releases" class="btn-download">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+                    Download Wrangler
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <p>
+                Wrangler &mdash; by Jason Gaddis &middot;
+                <a href="https://github.com/jgaddis99/wrangler">GitHub</a> &middot;
+                <a href="https://github.com/jgaddis99/wrangler/releases">Releases</a> &middot;
+                <a href="https://paypal.me/jgaddis99">Support Development</a> &middot;
+                MIT License
+            </p>
+        </div>
+    </footer>
+
+    <!-- Scroll reveal -->
+    <script>
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+    </script>
+</body>
+</html>
