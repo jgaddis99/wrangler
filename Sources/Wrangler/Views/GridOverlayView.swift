@@ -40,7 +40,7 @@ final class GridOverlayView: NSView {
     private let displayGap: CGFloat = 10
 
     static let maxPanelWidth: CGFloat = 800
-    static let headerHeight: CGFloat = 40
+    static let headerHeight: CGFloat = 55
 
     // Use top-left origin to match the rest of our coordinate system.
     // This makes hitTestGrid work correctly without manual Y-inversion.
@@ -190,8 +190,17 @@ final class GridOverlayView: NSView {
         ]
         let str = NSAttributedString(string: appName, attributes: attrs)
         let textSize = str.size()
-        let point = NSPoint(x: (rect.width - textSize.width) / 2, y: rect.origin.y + (rect.height - textSize.height) / 2)
+        let point = NSPoint(x: (rect.width - textSize.width) / 2, y: rect.origin.y + 8)
         str.draw(at: point)
+
+        let subtitleAttrs: [NSAttributedString.Key: Any] = [
+            .foregroundColor: NSColor.white.withAlphaComponent(0.5),
+            .font: NSFont.systemFont(ofSize: 11, weight: .regular)
+        ]
+        let subtitle = NSAttributedString(string: "Drag to snap  \u{00B7}  \u{2318}+drag to tile all  \u{00B7}  Right-click to save zone", attributes: subtitleAttrs)
+        let subtitleSize = subtitle.size()
+        let subtitlePoint = NSPoint(x: (rect.width - subtitleSize.width) / 2, y: point.y + textSize.height + 2)
+        subtitle.draw(at: subtitlePoint)
     }
 
     private func drawDisplay(_ entry: (displayID: UInt32, name: String, rect: NSRect, columns: Int, rows: Int)) {
@@ -225,7 +234,7 @@ final class GridOverlayView: NSView {
 
         // Display border — highlight when hovered
         let isHovered = hoveredDisplayID == entry.displayID
-        let borderColor = isHovered ? NSColor.systemBlue : NSColor(white: 0.4, alpha: 1.0)
+        let borderColor = isHovered ? NSColor.controlAccentColor : NSColor(white: 0.4, alpha: 1.0)
         let borderWidth: CGFloat = isHovered ? 3.0 : 1.5
         borderColor.setStroke()
         let borderPath = NSBezierPath(roundedRect: rect, xRadius: 4, yRadius: 4)
@@ -254,14 +263,15 @@ final class GridOverlayView: NSView {
         let cellW = rect.width / CGFloat(entry.columns)
         let cellH = rect.height / CGFloat(entry.rows)
 
-        // Draw grid lines
-        NSColor(white: 0.35, alpha: 1.0).setStroke()
+        // Draw grid lines (dashed)
+        NSColor.white.withAlphaComponent(0.12).setStroke()
         for col in 1..<entry.columns {
             let x = rect.origin.x + CGFloat(col) * cellW
             let path = NSBezierPath()
             path.move(to: NSPoint(x: x, y: rect.origin.y))
             path.line(to: NSPoint(x: x, y: rect.maxY))
-            path.lineWidth = 0.5
+            path.lineWidth = 1.0
+            path.setLineDash([4, 4], count: 2, phase: 0)
             path.stroke()
         }
         for row in 1..<entry.rows {
@@ -269,7 +279,8 @@ final class GridOverlayView: NSView {
             let path = NSBezierPath()
             path.move(to: NSPoint(x: rect.origin.x, y: y))
             path.line(to: NSPoint(x: rect.maxX, y: y))
-            path.lineWidth = 0.5
+            path.lineWidth = 1.0
+            path.setLineDash([4, 4], count: 2, phase: 0)
             path.stroke()
         }
 
@@ -286,10 +297,10 @@ final class GridOverlayView: NSView {
                 width: CGFloat(maxCol - minCol + 1) * cellW,
                 height: CGFloat(maxRow - minRow + 1) * cellH
             )
-            NSColor.systemBlue.withAlphaComponent(0.3).setFill()
+            NSColor.controlAccentColor.withAlphaComponent(0.3).setFill()
             let selPath = NSBezierPath(roundedRect: selRect, xRadius: 2, yRadius: 2)
             selPath.fill()
-            NSColor.systemBlue.withAlphaComponent(0.7).setStroke()
+            NSColor.controlAccentColor.withAlphaComponent(0.7).setStroke()
             selPath.lineWidth = 2
             selPath.stroke()
         }

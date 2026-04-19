@@ -30,9 +30,16 @@ final class GridOverlayPanel: NSPanel {
         level = .floating
         isMovableByWindowBackground = false
         hidesOnDeactivate = false
-        backgroundColor = NSColor(white: 0.1, alpha: 0.95)
-
-        contentView = overlayView
+        backgroundColor = .clear
+        let visualEffect = NSVisualEffectView(frame: .zero)
+        visualEffect.material = .hudWindow
+        visualEffect.blendingMode = .behindWindow
+        visualEffect.state = .active
+        visualEffect.autoresizingMask = [.width, .height]
+        contentView = visualEffect
+        visualEffect.addSubview(overlayView)
+        overlayView.frame = visualEffect.bounds
+        overlayView.autoresizingMask = [.width, .height]
         center()
     }
 

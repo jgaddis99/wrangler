@@ -31,13 +31,13 @@ struct GridPreviewView: View {
                     let y = CGFloat(row) * (cellH + gapF)
                     let rect = CGRect(x: x, y: y, width: cellW, height: cellH)
                     let path = Path(roundedRect: rect, cornerRadius: 2)
-                    context.fill(path, with: .color(.accentColor.opacity(0.15)))
-                    context.stroke(path, with: .color(.accentColor.opacity(0.5)), lineWidth: 1)
+                    context.fill(path, with: .color(.accentColor.opacity(0.25)))
+                    context.stroke(path, with: .color(.accentColor.opacity(0.7)), lineWidth: 1)
                 }
             }
         }
         .frame(width: previewWidth, height: previewHeight)
-        .background(Color.black.opacity(0.3))
+        .background(Color(nsColor: .windowBackgroundColor).opacity(0.5))
         .clipShape(RoundedRectangle(cornerRadius: 6))
     }
 }

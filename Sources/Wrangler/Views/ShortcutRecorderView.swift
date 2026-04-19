@@ -44,8 +44,9 @@ final class ShortcutRecorderButton: NSButton {
     }
 
     private func setup() {
-        bezelStyle = .rounded
+        bezelStyle = .recessed
         setButtonType(.momentaryPushIn)
+        font = .systemFont(ofSize: 12, weight: .medium)
         updateTitle()
         target = self
         action = #selector(toggleRecording)
@@ -54,8 +55,10 @@ final class ShortcutRecorderButton: NSButton {
     func updateTitle() {
         if isRecording {
             title = "Press shortcut..."
+            contentTintColor = .controlAccentColor
         } else {
             title = currentCombo?.displayString ?? "Record Shortcut"
+            contentTintColor = nil
         }
     }
 

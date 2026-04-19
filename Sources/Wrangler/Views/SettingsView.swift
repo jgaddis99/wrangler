@@ -25,7 +25,12 @@ struct SettingsView: View {
                 .tabItem {
                     Label("Shortcuts", systemImage: "keyboard")
                 }
+
+            ZonesTab(configManager: configManager)
+                .tabItem {
+                    Label("Zones", systemImage: "square.grid.3x3")
+                }
         }
-        .frame(width: 520, height: 420)
+        .frame(width: 560, height: 520)
     }
 }

@@ -60,6 +60,9 @@ struct DisplaysTab: View {
                         )
                         .onChange(of: binding.wrappedValue.rows) { _, _ in configManager.save() }
                     }
+                    Text("\(binding.wrappedValue.columns)\u{00D7}\(binding.wrappedValue.rows) grid")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
 
                     HStack {
                         Text("Gap:")
@@ -70,6 +73,9 @@ struct DisplaysTab: View {
                         )
                         .onChange(of: binding.wrappedValue.gap) { _, _ in configManager.save() }
                     }
+                    Text("Space between snapped windows")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
                 }
 
                 Spacer()

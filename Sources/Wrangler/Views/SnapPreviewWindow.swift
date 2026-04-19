@@ -67,11 +67,11 @@ final class SnapPreviewView: NSView {
     }
 
     private func drawZoneFill() {
-        NSColor.systemBlue.withAlphaComponent(0.15).setFill()
+        NSColor.controlAccentColor.withAlphaComponent(0.15).setFill()
         let path = NSBezierPath(roundedRect: bounds.insetBy(dx: 1, dy: 1), xRadius: 6, yRadius: 6)
         path.fill()
 
-        NSColor.systemBlue.withAlphaComponent(0.6).setStroke()
+        NSColor.controlAccentColor.withAlphaComponent(0.6).setStroke()
         path.lineWidth = 2
         path.stroke()
     }
@@ -82,19 +82,19 @@ final class SnapPreviewView: NSView {
         let inset = bounds.insetBy(dx: borderWidth / 2, dy: borderWidth / 2)
 
         // Outer glow
-        NSColor.systemBlue.withAlphaComponent(0.3).setStroke()
+        NSColor.controlAccentColor.withAlphaComponent(0.3).setStroke()
         let glowPath = NSBezierPath(rect: bounds.insetBy(dx: 1, dy: 1))
         glowPath.lineWidth = borderWidth + 4
         glowPath.stroke()
 
         // Main border
-        NSColor.systemBlue.withAlphaComponent(0.8).setStroke()
+        NSColor.controlAccentColor.withAlphaComponent(0.8).setStroke()
         let borderPath = NSBezierPath(rect: inset)
         borderPath.lineWidth = borderWidth
         borderPath.stroke()
 
         // Inner subtle glow
-        NSColor.systemBlue.withAlphaComponent(0.15).setStroke()
+        NSColor.controlAccentColor.withAlphaComponent(0.15).setStroke()
         let innerPath = NSBezierPath(rect: bounds.insetBy(dx: borderWidth + 2, dy: borderWidth + 2))
         innerPath.lineWidth = 2
         innerPath.stroke()

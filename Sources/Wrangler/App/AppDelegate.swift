@@ -69,6 +69,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         menu.addItem(NSMenuItem.separator())
         menu.addItem(withTitle: "Show Grid Overlay", action: #selector(showOverlay), keyEquivalent: "")
         menu.addItem(NSMenuItem.separator())
+
+        // Custom zones submenu
+        if !configManager.config.customZones.isEmpty {
+            let zonesMenu = NSMenu()
+            for zone in configManager.config.customZones {
+                let item = NSMenuItem(title: zone.name, action: #selector(triggerCustomZone(_:)), keyEquivalent: "")
+                item.representedObject = zone.id
+                zonesMenu.addItem(item)
+            }
+            let zonesItem = NSMenuItem(title: "Custom Zones", action: nil, keyEquivalent: "")
+            zonesItem.submenu = zonesMenu
+            menu.addItem(zonesItem)
+            menu.addItem(NSMenuItem.separator())
+        }
+
         menu.addItem(withTitle: "Settings…", action: #selector(openSettings), keyEquivalent: ",")
         menu.addItem(NSMenuItem.separator())
         menu.addItem(withTitle: "Quit Wrangler", action: #selector(quitApp), keyEquivalent: "q")
@@ -102,6 +117,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     @objc private func showOverlay() {
         engine.toggleOverlay(configManager: configManager)
+    }
+
+    @objc private func triggerCustomZone(_ sender: NSMenuItem) {
+        guard let zoneID = sender.representedObject as? UUID else { return }
+        engine.snapToCustomZone(id: zoneID, config: configManager.config)
     }
 
     @objc private func openSettings() {

@@ -18,6 +18,8 @@ struct GeneralConfig: Codable, Equatable {
     var hideMenuBarIcon: Bool = false
     var overlayShortcut: KeyCombo? = KeyCombo(keyCode: 0x31, control: true, option: true, shift: false, command: false) // Ctrl+Alt+Space
     var autoShowOverlay: Bool = true
+    var showLivePreview: Bool = true
+    var autoHideOverlayDelay: Double = 3.0
 }
 
 struct WranglerConfig: Codable, Equatable {

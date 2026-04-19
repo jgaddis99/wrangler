@@ -46,6 +46,20 @@ struct GeneralTab: View {
                     }
             }
 
+            Section("Behavior") {
+                Toggle("Show live preview on display during drag", isOn: $configManager.config.general.showLivePreview)
+                    .onChange(of: configManager.config.general.showLivePreview) { _, _ in configManager.save() }
+
+                HStack {
+                    Text("Auto-hide overlay delay:")
+                    Slider(value: $configManager.config.general.autoHideOverlayDelay, in: 1...10, step: 0.5)
+                        .onChange(of: configManager.config.general.autoHideOverlayDelay) { _, _ in configManager.save() }
+                    Text("\(configManager.config.general.autoHideOverlayDelay, specifier: "%.1f")s")
+                        .monospacedDigit()
+                        .frame(width: 35)
+                }
+            }
+
             Section("Menu Bar") {
                 Toggle("Hide menu bar icon", isOn: $configManager.config.general.hideMenuBarIcon)
                     .disabled(true)
@@ -72,6 +86,12 @@ struct GeneralTab: View {
                         }
                     }
                 }
+            }
+            Section {
+                Button("Restore All Defaults") {
+                    configManager.resetToDefaults()
+                }
+                .foregroundColor(.red)
             }
         }
         .formStyle(.grouped)

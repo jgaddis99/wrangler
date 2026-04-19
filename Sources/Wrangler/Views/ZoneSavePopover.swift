@@ -18,7 +18,7 @@ final class ZoneSavePopover {
         onSave: @escaping SaveHandler
     ) {
         let panel = NSPanel(
-            contentRect: NSRect(x: 0, y: 0, width: 300, height: 180),
+            contentRect: NSRect(x: 0, y: 0, width: 320, height: 200),
             styleMask: [.titled, .closable],
             backing: .buffered,
             defer: false
@@ -55,21 +55,11 @@ struct ZoneSaveView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Text("Display:")
-                    .fontWeight(.medium)
-                Text(displayName)
-                    .foregroundColor(.secondary)
-            }
+            Text("\(displayName) — \(gridSummary)")
+                .font(.caption)
+                .foregroundColor(.secondary)
 
-            HStack {
-                Text("Zone:")
-                    .fontWeight(.medium)
-                Text(gridSummary)
-                    .foregroundColor(.secondary)
-            }
-
-            TextField("Zone name", text: $zoneName)
+            TextField("e.g., Code Editor Left", text: $zoneName)
                 .textFieldStyle(.roundedBorder)
 
             HStack {
