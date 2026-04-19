@@ -81,6 +81,8 @@ final class GridOverlayView: NSView {
         dragStartCell = nil
         dragCurrentCell = nil
         dragDisplayID = nil
+        hoveredDisplayID = nil
+        NSCursor.arrow.set()
         needsDisplay = true
     }
 
@@ -171,6 +173,12 @@ final class GridOverlayView: NSView {
         if newHover != hoveredDisplayID {
             hoveredDisplayID = newHover
             delegate?.gridOverlayView(self, hoveredDisplay: hoveredDisplayID)
+            // Crosshair cursor over grid, default arrow outside
+            if hoveredDisplayID != nil {
+                NSCursor.crosshair.set()
+            } else {
+                NSCursor.arrow.set()
+            }
             needsDisplay = true
         }
     }
@@ -178,6 +186,7 @@ final class GridOverlayView: NSView {
     override func mouseExited(with event: NSEvent) {
         hoveredDisplayID = nil
         delegate?.gridOverlayView(self, hoveredDisplay: nil)
+        NSCursor.arrow.set()
         needsDisplay = true
     }
 
