@@ -18,14 +18,11 @@ final class GridOverlayPanel: NSPanel {
 
         super.init(
             contentRect: NSRect(origin: .zero, size: panelSize),
-            styleMask: [.titled, .closable, .nonactivatingPanel],
+            styleMask: [.borderless, .nonactivatingPanel],
             backing: .buffered,
             defer: false
         )
 
-        title = ""
-        titlebarAppearsTransparent = true
-        titleVisibility = .hidden
         isFloatingPanel = true
         level = .floating
         isMovableByWindowBackground = false
