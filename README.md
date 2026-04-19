@@ -1,8 +1,8 @@
-# Wrangler
+# Wrangler — Free macOS Window Manager
 
-A macOS window manager that snaps windows to configurable grids, tiles app windows with one click, and keeps your desktop organized across multiple displays.
+A free, open-source window manager for macOS that snaps windows to configurable grids, tiles app windows with one click, and keeps your desktop organized across multiple displays. A lightweight alternative to paid window managers like Magnet and Moom.
 
-Built for power users who live in terminals and need fast, keyboard-driven window management.
+Built for developers, sysadmins, and power users who run multiple terminals, browsers, and apps across ultrawide and multi-monitor setups. Works with both Mac and Windows keyboards.
 
 ![Grid Overlay](screenshots/overlay.png)
 
