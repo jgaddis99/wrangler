@@ -45,6 +45,15 @@ struct AboutTab: View {
 
             Spacer()
 
+            // Links
+            VStack(spacing: 8) {
+                Link("GitHub", destination: URL(string: "https://github.com/jgaddis99/wrangler")!)
+                    .font(.system(size: 11))
+                Link("Support Development", destination: URL(string: "https://paypal.me/jgaddis99")!)
+                    .font(.system(size: 11))
+            }
+            .padding(.bottom, 8)
+
             // Credits
             Text("by Jason Gaddis")
                 .font(.system(size: 11))

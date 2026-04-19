@@ -93,6 +93,12 @@ To find your team ID: `security find-identity -v -p codesigning | grep "Apple De
 
 **Note:** Accessibility permission must be granted in System Settings > Privacy & Security > Accessibility. You may need to toggle it off and back on after rebuilding.
 
+## Support
+
+If Wrangler saves you time, consider buying me a coffee:
+
+[Donate via PayPal](https://paypal.me/jgaddis99)
+
 ## License
 
 MIT
