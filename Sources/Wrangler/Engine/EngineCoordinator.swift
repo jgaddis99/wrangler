@@ -132,7 +132,7 @@ final class EngineCoordinator: ObservableObject {
     /// Snap a window to a frame, saving the current position for undo.
     private func snapWindow(_ window: AXUIElement, to frame: CGRect) {
         saveForUndo(window)
-        snapWindow(window, to: frame)
+        windowManager.setWindowFrame(window, frame: frame)
     }
 
     /// Save the current window frame before snapping so we can undo.

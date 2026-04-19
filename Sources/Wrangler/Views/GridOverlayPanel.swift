@@ -58,24 +58,13 @@ final class GridOverlayPanel: NSPanel {
 
     func showOverlay() {
         overlayView.clearSelection()
-        // ARCHITECT FIX: Do NOT call NSApp.activate() — it defeats non-activating panel behavior.
-        // The panel should float without stealing focus from the window being managed.
-        makeKeyAndOrderFront(nil)
+        orderFront(nil)
     }
 
     func hideOverlay() {
         orderOut(nil)
     }
 
-    private var isHiding = false
-
-    override func resignKey() {
-        super.resignKey()
-        // Auto-dismiss when the panel loses key status (user clicked elsewhere)
-        // Guard against recursion: orderOut triggers resignKey
-        guard !isHiding else { return }
-        isHiding = true
-        hideOverlay()
-        isHiding = false
-    }
+    // Dismissed by Escape key or Ctrl+Alt+Space toggle.
+    // No resignKey override — it causes recursion crashes with borderless panels.
 }
