@@ -42,6 +42,10 @@ struct WranglerConfig: Codable, Equatable {
         ActionShortcut(action: .snapTopRight, keyCombo: KeyCombo(keyCode: 0x22, control: true, option: true, shift: false, command: false), enabled: true),
         ActionShortcut(action: .snapBottomLeft, keyCombo: KeyCombo(keyCode: 0x26, control: true, option: true, shift: false, command: false), enabled: true),
         ActionShortcut(action: .snapBottomRight, keyCombo: KeyCombo(keyCode: 0x28, control: true, option: true, shift: false, command: false), enabled: true),
+        // Thirds: Ctrl+Alt+1/2/3 (essential for ultrawides)
+        ActionShortcut(action: .snapLeftThird, keyCombo: KeyCombo(keyCode: 0x12, control: true, option: true, shift: false, command: false), enabled: true),   // Ctrl+Alt+1
+        ActionShortcut(action: .snapCenterThird, keyCombo: KeyCombo(keyCode: 0x13, control: true, option: true, shift: false, command: false), enabled: true), // Ctrl+Alt+2
+        ActionShortcut(action: .snapRightThird, keyCombo: KeyCombo(keyCode: 0x14, control: true, option: true, shift: false, command: false), enabled: true),  // Ctrl+Alt+3
         // Actions: Ctrl+Alt+key
         ActionShortcut(action: .maximize, keyCombo: KeyCombo(keyCode: 0x24, control: true, option: true, shift: false, command: false), enabled: true),
         ActionShortcut(action: .center, keyCombo: KeyCombo(keyCode: 0x08, control: true, option: true, shift: false, command: false), enabled: true),

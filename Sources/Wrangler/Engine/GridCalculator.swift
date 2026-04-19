@@ -63,6 +63,16 @@ enum GridCalculator {
             return GridPosition(column: 0, row: halfRows, columnSpan: halfCols, rowSpan: gridRows - halfRows)
         case .snapBottomRight:
             return GridPosition(column: halfCols, row: halfRows, columnSpan: gridColumns - halfCols, rowSpan: gridRows - halfRows)
+        case .snapLeftThird:
+            let thirdCols = max(1, gridColumns / 3)
+            return GridPosition(column: 0, row: 0, columnSpan: thirdCols, rowSpan: gridRows)
+        case .snapCenterThird:
+            let thirdCols = max(1, gridColumns / 3)
+            return GridPosition(column: thirdCols, row: 0, columnSpan: thirdCols, rowSpan: gridRows)
+        case .snapRightThird:
+            let thirdCols = max(1, gridColumns / 3)
+            let startCol = thirdCols * 2
+            return GridPosition(column: startCol, row: 0, columnSpan: gridColumns - startCol, rowSpan: gridRows)
         case .maximize:
             return GridPosition(column: 0, row: 0, columnSpan: gridColumns, rowSpan: gridRows)
         case .center, .nextDisplay, .previousDisplay:
