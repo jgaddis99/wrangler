@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wrangler vs Rectangle vs Magnet vs Moom — macOS Window Manager Comparison</title>
+    <meta name="description" content="Compare free and paid macOS window managers. See how Wrangler stacks up against Rectangle, Magnet, Moom, and Amethyst for grid snapping, ultrawide support, and keyboard shortcuts.">
+    <meta name="keywords" content="Wrangler vs Rectangle, macOS window manager comparison, free window manager Mac, Rectangle alternative, Magnet alternative, Moom alternative, ultrawide window manager">
+
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="macOS Window Manager Comparison — Wrangler vs Rectangle vs Magnet">
+    <meta property="og:description" content="Feature-by-feature comparison of free and paid macOS window managers.">
+    <meta property="og:url" content="https://jgaddis99.github.io/wrangler/compare.html">
+
+    <link rel="canonical" href="https://jgaddis99.github.io/wrangler/compare.html">
+
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "macOS Window Manager Comparison 2026",
+        "description": "Feature comparison of Wrangler, Rectangle, Magnet, Moom, and Amethyst for macOS window management.",
+        "author": {"@type": "Person", "name": "Jason Gaddis"},
+        "datePublished": "2026-04-19"
+    }
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg: #0a0e17;
+            --card: #111827;
+            --border: rgba(255,255,255,0.06);
+            --text: #e2e8f0;
+            --dim: #94a3b8;
+            --muted: #64748b;
+            --accent: #3b82f6;
+            --green: #22c55e;
+            --red: #ef4444;
+            --yellow: #eab308;
+        }
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        .container { max-width: 1000px; margin: 0 auto; padding: 0 24px; }
+
+        header { padding: 40px 0 20px; }
+        header a { color: var(--accent); text-decoration: none; font-size: 14px; }
+        header a:hover { text-decoration: underline; }
+
+        h1 {
+            font-size: 36px;
+            font-weight: 700;
+            letter-spacing: -1px;
+            margin: 20px 0 12px;
+        }
+        .subtitle {
+            color: var(--dim);
+            font-size: 16px;
+            margin-bottom: 40px;
+        }
+
+        h2 {
+            font-size: 24px;
+            font-weight: 700;
+            margin: 48px 0 20px;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--card);
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+        .comparison-table th {
+            padding: 14px 16px;
+            text-align: left;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 1px solid var(--border);
+            background: rgba(0,0,0,0.2);
+        }
+        .comparison-table td {
+            padding: 12px 16px;
+            font-size: 14px;
+            border-bottom: 1px solid var(--border);
+        }
+        .comparison-table tr:last-child td { border-bottom: none; }
+        .comparison-table tr:hover td { background: rgba(59,130,246,0.03); }
+        .comparison-table .feature-name { font-weight: 500; min-width: 200px; }
+        .yes { color: var(--green); }
+        .no { color: var(--red); }
+        .partial { color: var(--yellow); }
+        .highlight { background: rgba(59,130,246,0.05); }
+        .highlight td:first-child { border-left: 3px solid var(--accent); }
+
+        .price { font-family: 'JetBrains Mono', monospace; font-size: 13px; }
+        .free { color: var(--green); font-weight: 600; }
+        .paid { color: var(--dim); }
+
+        .summary {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 28px;
+            margin: 32px 0;
+        }
+        .summary h3 { font-size: 18px; margin-bottom: 12px; }
+        .summary p { color: var(--dim); font-size: 15px; margin-bottom: 8px; }
+        .summary ul { color: var(--dim); font-size: 14px; margin-left: 20px; }
+        .summary li { margin-bottom: 4px; }
+
+        .cta {
+            text-align: center;
+            padding: 60px 0;
+        }
+        .cta a {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            background: var(--accent);
+            color: white;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 15px;
+        }
+        .cta a:hover { background: #2563eb; }
+
+        footer {
+            padding: 30px 0;
+            border-top: 1px solid var(--border);
+            text-align: center;
+            font-size: 13px;
+            color: var(--muted);
+        }
+        footer a { color: var(--dim); text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <a href="./">&larr; Back to Wrangler</a>
+        </header>
+
+        <h1>macOS Window Manager Comparison</h1>
+        <p class="subtitle">A feature-by-feature comparison of the most popular macOS window managers in 2026.</p>
+
+        <table class="comparison-table">
+            <thead>
+                <tr>
+                    <th>Feature</th>
+                    <th class="highlight">Wrangler</th>
+                    <th>Rectangle</th>
+                    <th>Magnet</th>
+                    <th>Moom</th>
+                    <th>Amethyst</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="feature-name">Price</td>
+                    <td class="highlight"><span class="price free">Free</span></td>
+                    <td><span class="price free">Free</span></td>
+                    <td><span class="price paid">$4.99</span></td>
+                    <td><span class="price paid">$9.99</span></td>
+                    <td><span class="price free">Free</span></td>
+                </tr>
+                <tr>
+                    <td class="feature-name">Open Source</td>
+                    <td class="highlight"><span class="yes">Yes (MIT)</span></td>
+                    <td><span class="yes">Yes</span></td>
+                    <td><span class="no">No</span></td>
+                    <td><span class="no">No</span></td>
+                    <td><span class="yes">Yes</span></td>
+                </tr>
+                <tr>
+                    <td class="feature-name">Configurable Grid</td>
+                    <td class="highlight"><span class="yes">Yes (per display)</span></td>
+                    <td><span class="no">No</span></td>
+                    <td><span class="no">No</span></td>
+                    <td><span class="yes">Yes</span></td>
+                    <td><span class="no">No (auto-tiling)</span></td>
+                </tr>
+                <tr>
+                    <td class="feature-name">Visual Grid Overlay</td>
+                    <td class="highlight"><span class="yes">Yes (with wallpaper)</span></td>
+                    <td><span class="no">No</span></td>
+                    <td><span class="no">No</span></td>
+                    <td><span class="partial">Basic grid</span></td>
+                    <td><span class="no">No</span></td>
+                </tr>
+                <tr>
+                    <td class="feature-name">Drag-to-Snap on Overlay</td>
+                    <td class="highlight"><span class="yes">Yes</span></td>
+                    <td><span class="no">No</span></td>
+                    <td><span class="no">No</span></td>
+                    <td><span class="yes">Yes</span></td>
+                    <td><span class="no">No</span></td>
+                </tr>
+                <tr>
+                    <td class="feature-name">Batch-Tile App Windows</td>
+                    <td class="highlight"><span class="yes">Yes (Cmd+drag)</span></td>
+                    <td><span class="no">No</span></td>
+                    <td><span class="no">No</span></td>
+                    <td><span class="no">No</span></td>
+                    <td><span class="partial">Auto-tiles all</span></td>
+                </tr>
+                <tr>
+                    <td class="feature-name">Snap to Thirds</td>
+                    <td class="highlight"><span class="yes">Yes</span></td>
+                    <td><span class="yes">Yes</span></td>
+                    <td><span class="yes">Yes</span></td>
+                    <td><span class="yes">Yes</span></td>
+                    <td><span class="no">No</span></td>
+                </tr>
+                <tr>
+                    <td class="feature-name">Directional Grid Movement</td>
+                    <td class="highlight"><span class="yes">Yes (cell by cell)</span></td>
+                    <td><span class="no">No</span></td>
+                    <td><span class="no">No</span></td>
+                    <td><span class="no">No</span></td>
+                    <td><span class="partial">Focus cycling</span></td>
+                </tr>
+                <tr>
+                    <td class="feature-name">Grow/Shrink by Grid Cell</td>
+                    <td class="highlight"><span class="yes">Yes</span></td>
+                    <td><span class="no">No</span></td>
+                    <td><span class="no">No</span></td>
+                    <td><span class="no">No</span></td>
+                    <td><span class="partial">Expand/shrink</span></td>
+                </tr>
+                <tr>
+                    <td class="feature-name">Cross-Monitor at Grid Edge</td>
+                    <td class="highlight"><span class="yes">Yes</span></td>
+                    <td><span class="no">No</span></td>
+                    <td><span class="no">No</span></td>
+                    <td><span class="no">No</span></td>
+                    <td><span class="no">No</span></td>
+                </tr>
+                <tr>
+                    <td class="feature-name">Custom Saved Zones</td>
+                    <td class="highlight"><span class="yes">Yes (with shortcuts)</span></td>
+                    <td><span class="no">No</span></td>
+                    <td><span class="no">No</span></td>
+                    <td><span class="yes">Yes</span></td>
+                    <td><span class="no">No</span></td>
+                </tr>
+                <tr>
+                    <td class="feature-name">App Pinning</td>
+                    <td class="highlight"><span class="yes">Yes</span></td>
+                    <td><span class="no">No</span></td>
+                    <td><span class="no">No</span></td>
+                    <td><span class="no">No</span></td>
+                    <td><span class="no">No</span></td>
+                </tr>
+                <tr>
+                    <td class="feature-name">Auto-Tile Display</td>
+                    <td class="highlight"><span class="yes">Yes</span></td>
+                    <td><span class="no">No</span></td>
+                    <td><span class="no">No</span></td>
+                    <td><span class="no">No</span></td>
+                    <td><span class="yes">Yes (always-on)</span></td>
+                </tr>
+                <tr>
+                    <td class="feature-name">Undo Last Snap</td>
+                    <td class="highlight"><span class="yes">Yes</span></td>
+                    <td><span class="yes">Yes</span></td>
+                    <td><span class="no">No</span></td>
+                    <td><span class="yes">Yes</span></td>
+                    <td><span class="no">No</span></td>
+                </tr>
+                <tr>
+                    <td class="feature-name">Windows Keyboard Compatible</td>
+                    <td class="highlight"><span class="yes">Yes (Ctrl+Alt)</span></td>
+                    <td><span class="partial">Partial</span></td>
+                    <td><span class="partial">Partial</span></td>
+                    <td><span class="partial">Partial</span></td>
+                    <td><span class="partial">Partial</span></td>
+                </tr>
+                <tr>
+                    <td class="feature-name">Ultrawide Optimized</td>
+                    <td class="highlight"><span class="yes">Yes</span></td>
+                    <td><span class="partial">Basic</span></td>
+                    <td><span class="partial">Basic</span></td>
+                    <td><span class="yes">Yes</span></td>
+                    <td><span class="partial">Basic</span></td>
+                </tr>
+                <tr>
+                    <td class="feature-name">Auto-Update</td>
+                    <td class="highlight"><span class="yes">Yes (Sparkle)</span></td>
+                    <td><span class="yes">Yes</span></td>
+                    <td><span class="yes">Yes (App Store)</span></td>
+                    <td><span class="yes">Yes (App Store)</span></td>
+                    <td><span class="yes">Yes</span></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="summary">
+            <h3>When to Choose Wrangler</h3>
+            <ul>
+                <li>You use ultrawide monitors and need configurable grids, not just halves/quarters</li>
+                <li>You run many terminal windows and want to batch-tile them with one action</li>
+                <li>You switch between Mac and Windows keyboards and want consistent shortcuts</li>
+                <li>You want to move windows directionally through a grid, cell by cell</li>
+                <li>You want a visual overlay that shows your actual desktop layout</li>
+                <li>You want to pin apps to fixed positions and reset with one key</li>
+            </ul>
+        </div>
+
+        <div class="summary">
+            <h3>When to Choose Something Else</h3>
+            <p><strong>Rectangle</strong> if you want a simple, proven tool with drag-to-edge snapping and don't need grid customization.</p>
+            <p><strong>Amethyst</strong> if you want automatic tiling (windows rearrange themselves) rather than manual grid placement.</p>
+            <p><strong>Moom</strong> if you want a polished commercial app with a track record and App Store support.</p>
+        </div>
+
+        <h2>Frequently Asked Questions</h2>
+
+        <div class="summary">
+            <h3>Is Wrangler really free?</h3>
+            <p>Yes. Free, open source, MIT licensed. No trial, no premium tier, no account required.</p>
+        </div>
+        <div class="summary">
+            <h3>Does Wrangler work with ultrawide monitors?</h3>
+            <p>Yes. Wrangler was built specifically for ultrawide setups. You can configure any grid size per display (e.g., 6 columns for a 49" ultrawide) and snap to thirds, which is essential for ultrawide workflows.</p>
+        </div>
+        <div class="summary">
+            <h3>Does Wrangler work with multiple monitors?</h3>
+            <p>Yes. Each display has its own independent grid configuration. Arrow keys move windows across monitor boundaries automatically when you reach the edge of a grid.</p>
+        </div>
+        <div class="summary">
+            <h3>Can I tile all my terminal windows at once?</h3>
+            <p>Yes. Open the grid overlay (Ctrl+Alt+Space), hold Cmd, and drag across a zone. All windows of the focused app tile evenly into that area. Works with any app, not just terminals.</p>
+        </div>
+
+        <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            "mainEntity": [
+                {
+                    "@type": "Question",
+                    "name": "Is Wrangler really free?",
+                    "acceptedAnswer": {"@type": "Answer", "text": "Yes. Free, open source, MIT licensed. No trial, no premium tier, no account required."}
+                },
+                {
+                    "@type": "Question",
+                    "name": "Does Wrangler work with ultrawide monitors?",
+                    "acceptedAnswer": {"@type": "Answer", "text": "Yes. Wrangler was built specifically for ultrawide setups. You can configure any grid size per display and snap to thirds, which is essential for ultrawide workflows."}
+                },
+                {
+                    "@type": "Question",
+                    "name": "Does Wrangler work with multiple monitors?",
+                    "acceptedAnswer": {"@type": "Answer", "text": "Yes. Each display has its own independent grid configuration. Arrow keys move windows across monitor boundaries automatically."}
+                },
+                {
+                    "@type": "Question",
+                    "name": "Can I tile all my terminal windows at once?",
+                    "acceptedAnswer": {"@type": "Answer", "text": "Yes. Open the grid overlay, hold Cmd, and drag across a zone. All windows of the focused app tile evenly into that area."}
+                }
+            ]
+        }
+        </script>
+
+        <div class="cta">
+            <a href="https://github.com/jgaddis99/wrangler/releases">Download Wrangler Free</a>
+        </div>
+
+        <footer>
+            <a href="./">Wrangler</a> &mdash; by Jason Gaddis &middot;
+            <a href="https://github.com/jgaddis99/wrangler">GitHub</a> &middot;
+            MIT License
+        </footer>
+    </div>
+</body>
+</html>
