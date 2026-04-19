@@ -6,21 +6,22 @@
         <description>Updates for Wrangler window manager</description>
         <language>en</language>
         <item>
-            <title>Version 0.1.3</title>
-            <pubDate>Sat, 19 Apr 2026 22:30:00 +0000</pubDate>
-            <sparkle:version>4</sparkle:version>
-            <sparkle:shortVersionString>0.1.3</sparkle:shortVersionString>
+            <title>Version 0.1.4</title>
+            <pubDate>Sat, 19 Apr 2026 22:35:00 +0000</pubDate>
+            <sparkle:version>5</sparkle:version>
+            <sparkle:shortVersionString>0.1.4</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
             <description><![CDATA[
-                <h2>What's New in 0.1.3</h2>
+                <h2>What's New in 0.1.4</h2>
                 <ul>
+                    <li>Fixed crash when snapping windows via overlay or keyboard</li>
                     <li>Fixed crash when closing grid overlay</li>
-                    <li>Landing page and SEO improvements</li>
+                    <li>Improved overlay stability</li>
                 </ul>
             ]]></description>
-            <enclosure url="https://github.com/jgaddis99/wrangler/releases/download/v0.1.3/Wrangler-0.1.3.dmg"
-                       sparkle:edSignature="s4lem1l1Bmd6aW8qoGzrUqyPdLwC5i4M6c9aQiDJDKJrQQd2WdQDs2QyyKDHWQ4rjvZm1b8tBUkKADDRw7ufCQ=="
-                       length="2245672"
+            <enclosure url="https://github.com/jgaddis99/wrangler/releases/download/v0.1.4/Wrangler-0.1.4.dmg"
+                       sparkle:edSignature="hoqyOY4C5IdHFxzMQMOs/fGBmoNt/rckWeU4aIX63VnzSiZe0/AY5Aw1mr87aWseEticuf01u8XchVvGwa9KDQ=="
+                       length="2250068"
                        type="application/octet-stream" />
         </item>
     </channel>
