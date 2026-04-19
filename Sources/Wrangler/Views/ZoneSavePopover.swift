@@ -2,9 +2,10 @@
 //
 // A small floating panel for naming a custom zone and assigning
 // a keyboard shortcut. Appears after right-click-drag or
-// Shift+drag on the grid overlay. Full implementation in a later task.
+// Shift+drag on the grid overlay.
 
 import AppKit
+import SwiftUI
 
 final class ZoneSavePopover {
 
@@ -16,7 +17,78 @@ final class ZoneSavePopover {
         gridSummary: String,
         onSave: @escaping SaveHandler
     ) {
-        // Stub — full implementation coming in Task 5
-        wranglerLog("Wrangler: ZoneSavePopover show (stub)")
+        let panel = NSPanel(
+            contentRect: NSRect(x: 0, y: 0, width: 300, height: 180),
+            styleMask: [.titled, .closable],
+            backing: .buffered,
+            defer: false
+        )
+        panel.title = "Save Custom Zone"
+        panel.level = .floating
+        panel.isFloatingPanel = true
+
+        let view = ZoneSaveView(
+            displayName: displayName,
+            gridSummary: gridSummary,
+            onSave: { name, combo in
+                onSave(name, combo)
+                panel.close()
+            },
+            onCancel: {
+                panel.close()
+            }
+        )
+        panel.contentView = NSHostingView(rootView: view)
+        panel.center()
+        panel.makeKeyAndOrderFront(nil)
+    }
+}
+
+struct ZoneSaveView: View {
+    let displayName: String
+    let gridSummary: String
+    let onSave: (String, KeyCombo?) -> Void
+    let onCancel: () -> Void
+
+    @State private var zoneName: String = ""
+    @State private var keyCombo: KeyCombo?
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Text("Display:")
+                    .fontWeight(.medium)
+                Text(displayName)
+                    .foregroundColor(.secondary)
+            }
+
+            HStack {
+                Text("Zone:")
+                    .fontWeight(.medium)
+                Text(gridSummary)
+                    .foregroundColor(.secondary)
+            }
+
+            TextField("Zone name", text: $zoneName)
+                .textFieldStyle(.roundedBorder)
+
+            HStack {
+                Text("Shortcut:")
+                    .fontWeight(.medium)
+                ShortcutRecorderView(keyCombo: $keyCombo)
+                    .frame(width: 140)
+            }
+
+            HStack {
+                Spacer()
+                Button("Cancel") { onCancel() }
+                    .keyboardShortcut(.cancelAction)
+                Button("Save") { onSave(zoneName, keyCombo) }
+                    .keyboardShortcut(.defaultAction)
+                    .disabled(zoneName.isEmpty)
+            }
+        }
+        .padding()
+        .frame(width: 280)
     }
 }
