@@ -111,6 +111,8 @@ final class EngineCoordinator: ObservableObject {
             growWindowInGrid(direction: .up, config: config)
         case .growDown:
             growWindowInGrid(direction: .down, config: config)
+        case .autoTileDisplay:
+            autoTileCurrentDisplay(config: config)
         default:
             snapFocusedWindow(action: action, config: config)
         }
@@ -263,6 +265,68 @@ final class EngineCoordinator: ObservableObject {
             gridColumns: columns, gridRows: rows, gap: gap
         )
         windowManager.setWindowFrame(window, frame: frame)
+    }
+
+    private func autoTileCurrentDisplay(config: WranglerConfig) {
+        // Get the display the focused window is on
+        guard case .success(let focusedWindow) = windowManager.getFocusedWindow(),
+              let displayID = windowManager.displayID(for: focusedWindow) else { return }
+
+        // Get ALL visible windows on this display from all running apps
+        var allWindows: [AXUIElement] = []
+        for app in NSWorkspace.shared.runningApplications {
+            guard app.activationPolicy == .regular else { continue }
+            let windows = windowManager.getAllWindows(forPID: app.processIdentifier)
+            for window in windows {
+                if let wDisplayID = windowManager.displayID(for: window), wDisplayID == displayID {
+                    allWindows.append(window)
+                }
+            }
+        }
+        guard !allWindows.isEmpty else { return }
+
+        let displayConfig = config.displays.first { $0.displayID == displayID }
+        let gap = displayConfig?.gap ?? 0
+
+        guard let visibleFrame = displayDetector.visibleFrame(for: displayID) else { return }
+
+        // Calculate optimal grid layout for N windows
+        let n = allWindows.count
+        let tileCols = optimalColumns(for: n)
+        let tileRows = Int(ceil(Double(n) / Double(tileCols)))
+
+        let gapF = CGFloat(gap)
+        let totalGapX = gapF * CGFloat(max(0, tileCols - 1))
+        let totalGapY = gapF * CGFloat(max(0, tileRows - 1))
+        let tileWidth = (visibleFrame.width - totalGapX) / CGFloat(tileCols)
+        let tileHeight = (visibleFrame.height - totalGapY) / CGFloat(tileRows)
+
+        for (index, window) in allWindows.enumerated() {
+            let col = index % tileCols
+            let row = index / tileCols
+            let frame = CGRect(
+                x: visibleFrame.origin.x + CGFloat(col) * (tileWidth + gapF),
+                y: visibleFrame.origin.y + CGFloat(row) * (tileHeight + gapF),
+                width: tileWidth,
+                height: tileHeight
+            )
+            windowManager.setWindowFrame(window, frame: frame)
+        }
+        wranglerLog("Wrangler: Auto-tiled \(n) windows in \(tileCols)x\(tileRows) grid on display \(displayID)")
+    }
+
+    /// Calculates the optimal number of columns for tiling N windows.
+    private func optimalColumns(for windowCount: Int) -> Int {
+        switch windowCount {
+        case 1: return 1
+        case 2: return 2
+        case 3: return 3
+        case 4: return 2
+        case 5...6: return 3
+        case 7...9: return 3
+        case 10...12: return 4
+        default: return Int(ceil(sqrt(Double(windowCount))))
+        }
     }
 
     private func snapFocusedWindow(action: WranglerAction, config: WranglerConfig) {

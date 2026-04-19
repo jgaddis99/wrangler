@@ -2,7 +2,7 @@
 //
 // General settings tab: launch at login, window target mode,
 // global activation shortcut, and menu bar visibility toggle.
-// Uses a compact VStack layout to fit without scrolling.
+// Uses SettingsCard for consistent card styling across tabs.
 
 import ServiceManagement
 import SwiftUI
@@ -15,9 +15,9 @@ struct GeneralTab: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            VStack(spacing: 12) {
+            VStack(spacing: 10) {
                 // System
-                settingsSection("System") {
+                SettingsCard("System") {
                     Toggle("Launch at login", isOn: $configManager.config.general.launchAtLogin)
                         .onChange(of: configManager.config.general.launchAtLogin) { _, newValue in
                             setLaunchAtLogin(newValue)
@@ -26,7 +26,7 @@ struct GeneralTab: View {
                 }
 
                 // Window Target
-                settingsSection("Window Target") {
+                SettingsCard("Window Target") {
                     Picker("Which window to manage:", selection: $configManager.config.general.windowTarget) {
                         Text("Front-most active window").tag(WindowTarget.frontMost)
                         Text("Window under mouse cursor").tag(WindowTarget.underCursor)
@@ -38,7 +38,7 @@ struct GeneralTab: View {
                 }
 
                 // Grid Overlay
-                settingsSection("Grid Overlay") {
+                SettingsCard("Grid Overlay") {
                     HStack {
                         Text("Overlay shortcut")
                             .frame(width: labelWidth, alignment: .leading)
@@ -68,7 +68,7 @@ struct GeneralTab: View {
                 }
 
                 // Behavior
-                settingsSection("Behavior") {
+                SettingsCard("Behavior") {
                     Toggle("Show live preview on display during drag", isOn: $configManager.config.general.showLivePreview)
                         .onChange(of: configManager.config.general.showLivePreview) { _, _ in configManager.save() }
                         .help("Highlight the target zone on the display while dragging a window")
@@ -86,7 +86,7 @@ struct GeneralTab: View {
                 }
 
                 // Menu Bar
-                settingsSection("Menu Bar") {
+                SettingsCard("Menu Bar") {
                     Toggle("Hide menu bar icon", isOn: $configManager.config.general.hideMenuBarIcon)
                         .disabled(true)
                         .onChange(of: configManager.config.general.hideMenuBarIcon) { _, _ in
@@ -94,11 +94,11 @@ struct GeneralTab: View {
                         }
                     Text("Hiding the menu bar icon is disabled in v0.1 to prevent lockout.")
                         .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(.tertiary)
                 }
 
                 // Accessibility
-                settingsSection("Accessibility") {
+                SettingsCard("Accessibility") {
                     HStack(spacing: 8) {
                         if PermissionManager.isAccessibilityGranted {
                             Image(systemName: "checkmark.circle.fill")
@@ -125,38 +125,17 @@ struct GeneralTab: View {
                         configManager.resetToDefaults()
                     }
                     .foregroundStyle(.red)
+                    .controlSize(.small)
                     Spacer()
                 }
-                .padding(.top, 4)
+                .padding(.top, 2)
             }
             .padding(.horizontal, 24)
-            .padding(.vertical, 16)
+            .padding(.vertical, 14)
 
             Spacer(minLength: 0)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-    }
-
-    @ViewBuilder
-    private func settingsSection(_ title: String, @ViewBuilder content: () -> some View) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text(title)
-                .font(.system(size: 11, weight: .medium))
-                .foregroundStyle(.secondary)
-                .textCase(.uppercase)
-            VStack(alignment: .leading, spacing: 6) {
-                content()
-            }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 8)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color(nsColor: .controlBackgroundColor))
-            .clipShape(RoundedRectangle(cornerRadius: 8))
-            .overlay(
-                RoundedRectangle(cornerRadius: 8)
-                    .strokeBorder(Color.primary.opacity(0.06), lineWidth: 1)
-            )
-        }
     }
 
     private func setLaunchAtLogin(_ enabled: Bool) {

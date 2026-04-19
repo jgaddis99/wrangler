@@ -26,14 +26,16 @@ struct DisplaysTab: View {
                 }
                 Spacer()
             } else {
-                VStack(spacing: 16) {
+                VStack(spacing: 10) {
                     ForEach(displayDetector.displays) { display in
                         displayCard(for: display)
                     }
                 }
                 .padding(.horizontal, 24)
-                .padding(.vertical, 16)
+                .padding(.vertical, 14)
             }
+
+            Spacer(minLength: 0)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .onAppear {
@@ -45,35 +47,27 @@ struct DisplaysTab: View {
     private func displayCard(for display: DisplayDetector.DetectedDisplay) -> some View {
         let binding = displayConfigBinding(for: display)
 
-        VStack(spacing: 0) {
-            // Header: display name + resolution
-            HStack {
-                VStack(alignment: .leading, spacing: 1) {
-                    Text(display.name)
-                        .font(.system(size: 13, weight: .semibold))
-                    Text("\(Int(display.frame.width))\u{00D7}\(Int(display.frame.height))")
-                        .font(.system(size: 11))
-                        .foregroundStyle(.secondary)
-                }
-                Spacer()
+        VStack(alignment: .leading, spacing: 4) {
+            // Section header with display name
+            HStack(spacing: 6) {
+                Text(display.name.uppercased())
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundStyle(.secondary)
+                Text("\(Int(display.frame.width))\u{00D7}\(Int(display.frame.height))")
+                    .font(.system(size: 11))
+                    .foregroundStyle(.tertiary)
                 if display.isMain {
-                    Text("Primary")
-                        .font(.caption2)
+                    Text("PRIMARY")
+                        .font(.system(size: 9, weight: .semibold))
                         .foregroundStyle(.secondary)
-                        .padding(.horizontal, 6)
-                        .padding(.vertical, 2)
+                        .padding(.horizontal, 5)
+                        .padding(.vertical, 1)
                         .background(.quaternary)
-                        .clipShape(RoundedRectangle(cornerRadius: 4))
+                        .clipShape(RoundedRectangle(cornerRadius: 3))
                 }
             }
-            .padding(.horizontal, 14)
-            .padding(.top, 10)
-            .padding(.bottom, 8)
 
-            Divider()
-                .padding(.horizontal, 14)
-
-            // Controls + Preview side by side
+            // Card content
             HStack(alignment: .center, spacing: 16) {
                 // Controls column
                 VStack(alignment: .leading, spacing: 6) {
@@ -133,13 +127,13 @@ struct DisplaysTab: View {
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 10)
+            .background(Color(nsColor: .controlBackgroundColor))
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .overlay(
+                RoundedRectangle(cornerRadius: 8)
+                    .strokeBorder(Color.primary.opacity(0.06), lineWidth: 1)
+            )
         }
-        .background(Color(nsColor: .controlBackgroundColor))
-        .clipShape(RoundedRectangle(cornerRadius: 10))
-        .overlay(
-            RoundedRectangle(cornerRadius: 10)
-                .strokeBorder(Color.primary.opacity(0.06), lineWidth: 1)
-        )
     }
 
     private func displayConfigBinding(for display: DisplayDetector.DetectedDisplay) -> Binding<DisplayConfig> {

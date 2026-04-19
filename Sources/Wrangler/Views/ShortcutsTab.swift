@@ -13,7 +13,7 @@ struct ShortcutsTab: View {
     private static let quarters: [WranglerAction] = [.snapTopLeft, .snapTopRight, .snapBottomLeft, .snapBottomRight]
     private static let thirds: [WranglerAction] = [.snapLeftThird, .snapCenterThird, .snapRightThird]
     private static let resize: [WranglerAction] = [.growLeft, .growRight, .growUp, .growDown]
-    private static let actions: [WranglerAction] = [.maximize, .center]
+    private static let actions: [WranglerAction] = [.maximize, .center, .autoTileDisplay]
     private static let displayMovement: [WranglerAction] = [.nextDisplay, .previousDisplay]
 
     /// Fixed width for the action label so all shortcut recorders align.

@@ -54,6 +54,7 @@ struct WranglerConfig: Codable, Equatable {
         // Actions: Ctrl+Alt+key
         ActionShortcut(action: .maximize, keyCombo: KeyCombo(keyCode: 0x24, control: true, option: true, shift: false, command: false), enabled: true),
         ActionShortcut(action: .center, keyCombo: KeyCombo(keyCode: 0x08, control: true, option: true, shift: false, command: false), enabled: true),
+        ActionShortcut(action: .autoTileDisplay, keyCombo: KeyCombo(keyCode: 0x11, control: true, option: true, shift: false, command: false), enabled: true), // Ctrl+Alt+T
         // Display switching: Ctrl+Cmd+Arrow (Ctrl+Win+Arrow on Windows KB)
         ActionShortcut(action: .nextDisplay, keyCombo: KeyCombo(keyCode: 0x7C, control: true, option: false, shift: false, command: true), enabled: true),
         ActionShortcut(action: .previousDisplay, keyCombo: KeyCombo(keyCode: 0x7B, control: true, option: false, shift: false, command: true), enabled: true),

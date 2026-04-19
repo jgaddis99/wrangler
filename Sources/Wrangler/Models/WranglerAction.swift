@@ -26,6 +26,7 @@ enum WranglerAction: String, Codable, CaseIterable, Identifiable {
     case center
     case nextDisplay
     case previousDisplay
+    case autoTileDisplay
 
     var id: String { rawValue }
 
@@ -50,6 +51,7 @@ enum WranglerAction: String, Codable, CaseIterable, Identifiable {
         case .center: "Center"
         case .nextDisplay: "Next Display"
         case .previousDisplay: "Previous Display"
+        case .autoTileDisplay: "Auto-Tile Display"
         }
     }
 
@@ -74,6 +76,7 @@ enum WranglerAction: String, Codable, CaseIterable, Identifiable {
         case .center: "rectangle.center.inset.filled"
         case .nextDisplay: "rectangle.righthalf.inset.arrow.right"
         case .previousDisplay: "rectangle.lefthalf.inset.arrow.left"
+        case .autoTileDisplay: "square.grid.2x2"
         }
     }
 }

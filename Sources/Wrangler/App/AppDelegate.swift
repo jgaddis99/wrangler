@@ -73,6 +73,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         menu.addItem(withTitle: "Show Grid Overlay", action: #selector(showOverlay), keyEquivalent: "")
         menu.addItem(NSMenuItem.separator())
 
+        menu.addItem(withTitle: "Auto-Tile This Display", action: #selector(autoTileDisplay), keyEquivalent: "")
+        menu.addItem(NSMenuItem.separator())
+
         // Tile windows submenu — tile all windows of the frontmost app on a monitor
         let tileMenu = NSMenu()
         for display in engine.displayDetector.displays {
@@ -138,6 +141,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     @objc private func previousDisplay() {
         engine.handleAction(.previousDisplay, config: configManager.config)
+    }
+
+    @objc private func autoTileDisplay() {
+        engine.handleAction(.autoTileDisplay, config: configManager.config)
     }
 
     @objc private func showOverlay() {
