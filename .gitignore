@@ -18,5 +18,24 @@ build/
 # Generated
 Wrangler.xcodeproj/
 
+# Profiling
+*.profraw
+*.profdata
+
+# Local config (team ID, signing)
+.env.local
+Local.xcconfig
+
+# Claude Code
+.claude/
+
+# Temp
+tmp/
+/tmp/
+
 # Remember
 .remember/
+
+# Internal docs (contain local paths)
+docs/superpowers/plans/
+docs/superpowers/specs/

@@ -7,6 +7,10 @@ options:
   createIntermediateGroups: true
   generateEmptyDirectories: true
 
+configFiles:
+  Debug: Local.xcconfig
+  Release: Local.xcconfig
+
 settings:
   base:
     SWIFT_VERSION: "5.10"
@@ -24,7 +28,6 @@ targets:
         CURRENT_PROJECT_VERSION: 1
         CODE_SIGN_IDENTITY: "Apple Development"
         CODE_SIGN_STYLE: Automatic
-        DEVELOPMENT_TEAM: CSJWK8QGKL
         ENABLE_APP_SANDBOX: false
         INFOPLIST_FILE: Sources/Wrangler/Info.plist
   WranglerTests:
