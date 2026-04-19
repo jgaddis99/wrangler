@@ -22,7 +22,7 @@ final class GridOverlayView: NSView {
     private var displays: [DisplayDetector.DetectedDisplay] = []
     private var configs: [DisplayConfig] = []
     private var displayRects: [(displayID: UInt32, name: String, rect: NSRect, columns: Int, rows: Int)] = []
-    private var displayScreenshots: [UInt32: NSImage] = [:]  // Cached screenshots per display
+    private var displayWallpapers: [UInt32: NSImage] = [:]  // Cached wallpapers per display
 
     // Drag state
     private var isDragging = false
@@ -59,18 +59,19 @@ final class GridOverlayView: NSView {
     func updateDisplays(_ displays: [DisplayDetector.DetectedDisplay], configs: [DisplayConfig]) {
         self.displays = displays
         self.configs = configs
-        captureScreenshots()
+        cacheWallpapers()
         recalculateLayout()
         needsDisplay = true
     }
 
-    /// Capture a screenshot of each display using CGDisplayCreateImage.
-    private func captureScreenshots() {
-        displayScreenshots.removeAll()
-        for display in displays {
-            if let cgImage = CGDisplayCreateImage(CGDirectDisplayID(display.id)) {
-                let nsImage = NSImage(cgImage: cgImage, size: NSSize(width: cgImage.width, height: cgImage.height))
-                displayScreenshots[display.id] = nsImage
+    /// Cache wallpaper images for each display.
+    private func cacheWallpapers() {
+        displayWallpapers.removeAll()
+        for screen in NSScreen.screens {
+            let displayID = screen.displayID
+            if let url = NSWorkspace.shared.desktopImageURL(for: screen),
+               let image = NSImage(contentsOf: url) {
+                displayWallpapers[displayID] = image
             }
         }
     }
@@ -219,13 +220,12 @@ final class GridOverlayView: NSView {
     private func drawDisplay(_ entry: (displayID: UInt32, name: String, rect: NSRect, columns: Int, rows: Int)) {
         let rect = entry.rect
 
-        // Draw live screenshot of the display as background
-        // Clip to rounded rect so the image has nice corners
+        // Draw wallpaper as display background with rounded corners
         let clipPath = NSBezierPath(roundedRect: rect, xRadius: 6, yRadius: 6)
         NSGraphicsContext.saveGraphicsState()
         clipPath.addClip()
 
-        if let screenshot = displayScreenshots[entry.displayID] {
+        if let wallpaper = displayWallpapers[entry.displayID] {
             // Flip for correct orientation (isFlipped=true inverts image drawing)
             NSGraphicsContext.saveGraphicsState()
             let transform = NSAffineTransform()
@@ -233,15 +233,15 @@ final class GridOverlayView: NSView {
             transform.scaleX(by: 1, yBy: -1)
             transform.translateX(by: 0, yBy: -rect.origin.y)
             transform.concat()
-            screenshot.draw(in: rect, from: .zero, operation: .sourceOver, fraction: 0.85)
+            wallpaper.draw(in: rect, from: .zero, operation: .sourceOver, fraction: 0.7)
             NSGraphicsContext.restoreGraphicsState()
 
-            // Subtle dark overlay so grid lines are visible against bright content
-            NSColor.black.withAlphaComponent(0.2).setFill()
+            // Dark overlay for grid line visibility
+            NSColor.black.withAlphaComponent(0.25).setFill()
             clipPath.fill()
         } else {
-            // Fallback: dark background
-            NSColor(white: 0.15, alpha: 1.0).setFill()
+            // Fallback: gradient background
+            NSColor(white: 0.18, alpha: 1.0).setFill()
             clipPath.fill()
         }
 
