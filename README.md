@@ -1,71 +1,122 @@
 # Wrangler
 
-A powerful macOS window manager that snaps windows to configurable grids, tiles app windows with one click, and keeps your desktop organized across multiple displays.
+A macOS window manager that snaps windows to configurable grids, tiles app windows with one click, and keeps your desktop organized across multiple displays.
 
 Built for power users who live in terminals and need fast, keyboard-driven window management.
 
-## Features
+![Grid Overlay](screenshots/overlay.png)
 
-**Grid Snapping**
-- Snap windows to halves, quarters, thirds, or any custom grid zone
-- Move windows one cell at a time with directional arrow keys
-- Grow/shrink windows by extending grid cells in any direction
-- Cross-monitor movement — arrow keys wrap to the adjacent display at grid edges
+## Download
 
-**Visual Grid Overlay**
-- Floating overlay shows all displays with desktop wallpapers and grid lines
-- Click and drag to select any zone — window snaps on release
-- Live preview highlights the exact area on your actual monitor
-- Cmd+drag to batch-tile all windows of the focused app into a zone
-- Right-click drag to save a custom zone with a keyboard shortcut
+Grab the latest DMG from [Releases](https://github.com/jgaddis99/wrangler/releases). Drag Wrangler to Applications, launch it, and grant Accessibility permission when prompted.
 
-**Auto-Tile**
-- One shortcut tiles every visible window on the current display into an optimal grid
-- Smart layout picks the best column/row arrangement based on window count
+Wrangler lives in your menu bar and checks for updates automatically.
 
-**App Pinning**
-- Pin specific apps to fixed grid zones (Slack always bottom-right, Mail always top-left)
-- One shortcut resets all pinned apps to their designated positions
+## Quick Start
 
-**Custom Zones**
-- Save any grid region as a named zone with a dedicated shortcut
-- Manage zones in Settings — rename, rebind, or delete
+1. **Launch Wrangler** — it appears as a grid icon in your menu bar
+2. **Grant Accessibility permission** — required for window management (System Settings > Privacy & Security > Accessibility)
+3. **Try it** — focus any window and press `Ctrl+Alt+Right Arrow` to snap it to a grid cell
 
-**Undo**
-- Undo the last snap to restore the previous window position
+That's it. Keep pressing the arrow to move it across the grid. Hit `Ctrl+Alt+Space` to open the visual overlay for drag-based snapping.
 
-## Default Shortcuts
+## How It Works
 
-| Shortcut | Action |
-|----------|--------|
-| `Ctrl+Alt+Arrow` | Move window one grid cell |
-| `Ctrl+Alt+Shift+Arrow` | Grow window one cell in that direction |
-| `Ctrl+Alt+U/I/J/K` | Snap to quarter (spatial 2x2 on keyboard) |
-| `Ctrl+Alt+1/2/3` | Snap to left/center/right third |
+### Grid Movement
+
+Every display has a configurable grid (default 4 columns x 3 rows). Use keyboard shortcuts to move and resize windows within the grid.
+
+| Shortcut | What it does |
+|----------|-------------|
+| `Ctrl+Alt+Arrow` | Snap to one grid cell, move in that direction |
+| `Ctrl+Alt+Shift+Arrow` | Grow the window one cell in that direction |
+| `Ctrl+Alt+U` / `I` / `J` / `K` | Snap to quarter (keys form a 2x2 on your keyboard) |
+| `Ctrl+Alt+1` / `2` / `3` | Snap to left / center / right third |
 | `Ctrl+Alt+Enter` | Maximize |
-| `Ctrl+Alt+C` | Center |
-| `Ctrl+Alt+T` | Auto-tile all windows on current display |
+| `Ctrl+Alt+C` | Center on current display |
 | `Ctrl+Alt+Z` | Undo last snap |
-| `Ctrl+Alt+Space` | Open grid overlay |
-| `Ctrl+Alt+R` | Reset all pinned apps |
-| `Ctrl+Cmd+Left/Right` | Move window to previous/next display |
+| `Ctrl+Cmd+Left` / `Right` | Move to previous / next display |
 
-All shortcuts are fully customizable in Settings.
+When you reach the edge of a display, the arrow keys wrap to the adjacent monitor.
 
-Shortcuts use `Ctrl+Alt` as the base modifier, which maps to the same physical keys on both Mac and Windows/PC keyboards.
+### Visual Grid Overlay
+
+Press `Ctrl+Alt+Space` to open the overlay. It shows all your displays with wallpaper backgrounds and grid lines.
+
+![Settings](screenshots/settings.png)
+
+**Drag** across grid cells to select a zone — the window snaps on release. A live preview highlights exactly where it will land on your actual monitor.
+
+**Cmd+Drag** to batch-tile — all windows of the focused app (e.g., all your terminals) tile evenly into the selected zone.
+
+**Right-click drag** to save a custom zone with a name and keyboard shortcut. Manage saved zones in Settings > Zones.
+
+### Auto-Tile
+
+Press `Ctrl+Alt+T` to auto-tile every visible window on the current display into an optimal grid. Works great for quickly organizing a messy desktop.
+
+Also available from the menu bar: **Tile App Windows > Tile on [Display Name]** tiles all windows of the frontmost app on a specific monitor.
+
+### App Pinning
+
+Pin apps like Slack, Mail, or Discord to fixed positions. When things get messy, press `Ctrl+Alt+R` to reset all pinned apps back to their spots.
+
+1. Open Settings > Zones
+2. Focus the app you want to pin
+3. Click "Pin Current App"
+4. Position the app where you want it
+
+### Settings
+
+Access Settings from the menu bar icon. Configure per-display grids, customize all shortcuts, manage saved zones and pinned apps.
+
+**Displays** — set columns, rows, and gap per monitor. The grid preview shows your wallpaper with the grid overlay.
+
+**Shortcuts** — every shortcut is customizable. Click "Record Shortcut" and press your preferred key combination.
+
+**Zones** — view, rename, rebind, or delete saved custom zones. Also manage pinned apps here.
+
+## Keyboard Reference
+
+All shortcuts use `Ctrl+Alt` as the base modifier. This maps to the same physical keys on both Mac keyboards and Windows/PC keyboards (when docked).
+
+| Category | Shortcut | Action |
+|----------|----------|--------|
+| **Move** | `Ctrl+Alt+Arrow` | Move window one grid cell |
+| **Grow** | `Ctrl+Alt+Shift+Arrow` | Extend window one cell |
+| **Quarters** | `Ctrl+Alt+U/I/J/K` | Snap to quarter |
+| **Thirds** | `Ctrl+Alt+1/2/3` | Snap to third (ultrawide) |
+| **Actions** | `Ctrl+Alt+Enter` | Maximize |
+| | `Ctrl+Alt+C` | Center |
+| | `Ctrl+Alt+T` | Auto-tile display |
+| | `Ctrl+Alt+Z` | Undo last snap |
+| **Overlay** | `Ctrl+Alt+Space` | Open grid overlay |
+| **Pins** | `Ctrl+Alt+R` | Reset all pinned apps |
+| **Display** | `Ctrl+Cmd+Left/Right` | Move to other display |
+
+## Why Wrangler?
+
+I built Wrangler because I couldn't find a window manager that did what I needed. I run two stacked ultrawide monitors with a dozen Ghostty terminals, multiple browsers, and apps scattered everywhere. I needed something that could snap windows to a grid fast, batch-tile all my terminals at once, and work equally well with my Mac keyboard and the Windows keyboard I use when docked.
+
+That last part matters more than you'd think. Most Mac window managers use `Cmd` as the primary modifier, which maps to the Windows key on a PC keyboard — awkward and inconsistent. Wrangler uses `Ctrl+Alt` for everything, which hits the same physical keys on both keyboards. If you switch between Mac and PC keyboards throughout the day, this just works.
+
+### Mac vs Windows Keyboard Mapping
+
+| Wrangler Shortcut | Mac Keyboard | Windows/PC Keyboard |
+|-------------------|-------------|-------------------|
+| `Ctrl+Alt+Arrow` | `⌃⌥Arrow` | `Ctrl+Alt+Arrow` |
+| `Ctrl+Alt+Shift+Arrow` | `⌃⌥⇧Arrow` | `Ctrl+Alt+Shift+Arrow` |
+| `Ctrl+Alt+Space` | `⌃⌥Space` | `Ctrl+Alt+Space` |
+| `Ctrl+Cmd+Arrow` | `⌃⌘Arrow` | `Ctrl+Win+Arrow` |
+
+Same physical keys, same muscle memory, no matter which keyboard is plugged in.
 
 ## Requirements
 
 - macOS 14.0 (Sonoma) or later
-- Accessibility permission (required for window management)
+- Accessibility permission
 
 ## Building from Source
-
-**Prerequisites:**
-- Xcode 15+
-- [xcodegen](https://github.com/yonaskolb/XcodeGen) (`brew install xcodegen`)
-
-**Setup:**
 
 ```bash
 # Clone
@@ -73,32 +124,28 @@ git clone https://github.com/jgaddis99/wrangler.git
 cd wrangler
 
 # Create local signing config
-cat > Local.xcconfig << 'EOF'
-DEVELOPMENT_TEAM = YOUR_TEAM_ID
-EOF
+echo 'DEVELOPMENT_TEAM = YOUR_TEAM_ID' > Local.xcconfig
 
-# Build
+# Build and run
 just build
-# or manually:
-xcodegen generate && xcodebuild build -project Wrangler.xcodeproj -scheme Wrangler -configuration Debug
 
 # Run tests
 just test
 
-# Build DMG for distribution
+# Build DMG
 just dmg
 ```
 
-To find your team ID: `security find-identity -v -p codesigning | grep "Apple Development"`
+Find your team ID: `security find-identity -v -p codesigning | grep "Apple Development"`
 
-**Note:** Accessibility permission must be granted in System Settings > Privacy & Security > Accessibility. You may need to toggle it off and back on after rebuilding.
+Requires [xcodegen](https://github.com/yonaskolb/XcodeGen) (`brew install xcodegen`) and Xcode 15+.
 
 ## Support
 
-If Wrangler saves you time, consider buying me a coffee:
+If Wrangler saves you time, consider supporting development:
 
 [Donate via PayPal](https://paypal.me/jgaddis99)
 
 ## License
 
-MIT
+[MIT](LICENSE)
