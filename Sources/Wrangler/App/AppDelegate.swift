@@ -43,6 +43,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             .store(in: &cancellables)
     }
 
+    func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
+        false  // Keep running as a menu bar app after settings window closes
+    }
+
     func applicationWillTerminate(_ notification: Notification) {
         engine.stop()
     }
