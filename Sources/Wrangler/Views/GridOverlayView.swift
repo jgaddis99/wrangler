@@ -22,6 +22,7 @@ final class GridOverlayView: NSView {
     private var displays: [DisplayDetector.DetectedDisplay] = []
     private var configs: [DisplayConfig] = []
     private var displayRects: [(displayID: UInt32, name: String, rect: NSRect, columns: Int, rows: Int)] = []
+    private var displayScreenshots: [UInt32: NSImage] = [:]  // Cached screenshots per display
 
     // Drag state
     private var isDragging = false
@@ -58,8 +59,20 @@ final class GridOverlayView: NSView {
     func updateDisplays(_ displays: [DisplayDetector.DetectedDisplay], configs: [DisplayConfig]) {
         self.displays = displays
         self.configs = configs
+        captureScreenshots()
         recalculateLayout()
         needsDisplay = true
+    }
+
+    /// Capture a screenshot of each display using CGDisplayCreateImage.
+    private func captureScreenshots() {
+        displayScreenshots.removeAll()
+        for display in displays {
+            if let cgImage = CGDisplayCreateImage(CGDirectDisplayID(display.id)) {
+                let nsImage = NSImage(cgImage: cgImage, size: NSSize(width: cgImage.width, height: cgImage.height))
+                displayScreenshots[display.id] = nsImage
+            }
+        }
     }
 
     func clearSelection() {
@@ -206,31 +219,33 @@ final class GridOverlayView: NSView {
     private func drawDisplay(_ entry: (displayID: UInt32, name: String, rect: NSRect, columns: Int, rows: Int)) {
         let rect = entry.rect
 
-        // Try to draw desktop wallpaper as background
-        var drewWallpaper = false
-        if let screen = NSScreen.screens.first(where: { $0.displayID == entry.displayID }) {
-            if let wallpaperURL = NSWorkspace.shared.desktopImageURL(for: screen),
-               let image = NSImage(contentsOf: wallpaperURL) {
-                // Save graphics state and flip vertically for correct image orientation
-                // (isFlipped=true on the view inverts image drawing)
-                NSGraphicsContext.saveGraphicsState()
-                let transform = NSAffineTransform()
-                transform.translateX(by: 0, yBy: rect.origin.y + rect.height)
-                transform.scaleX(by: 1, yBy: -1)
-                transform.translateX(by: 0, yBy: -rect.origin.y)
-                transform.concat()
-                image.draw(in: rect, from: .zero, operation: .sourceOver, fraction: 0.6)
-                NSGraphicsContext.restoreGraphicsState()
-                drewWallpaper = true
-            }
+        // Draw live screenshot of the display as background
+        // Clip to rounded rect so the image has nice corners
+        let clipPath = NSBezierPath(roundedRect: rect, xRadius: 6, yRadius: 6)
+        NSGraphicsContext.saveGraphicsState()
+        clipPath.addClip()
+
+        if let screenshot = displayScreenshots[entry.displayID] {
+            // Flip for correct orientation (isFlipped=true inverts image drawing)
+            NSGraphicsContext.saveGraphicsState()
+            let transform = NSAffineTransform()
+            transform.translateX(by: 0, yBy: rect.origin.y + rect.height)
+            transform.scaleX(by: 1, yBy: -1)
+            transform.translateX(by: 0, yBy: -rect.origin.y)
+            transform.concat()
+            screenshot.draw(in: rect, from: .zero, operation: .sourceOver, fraction: 0.85)
+            NSGraphicsContext.restoreGraphicsState()
+
+            // Subtle dark overlay so grid lines are visible against bright content
+            NSColor.black.withAlphaComponent(0.2).setFill()
+            clipPath.fill()
+        } else {
+            // Fallback: dark background
+            NSColor(white: 0.15, alpha: 1.0).setFill()
+            clipPath.fill()
         }
 
-        // Fallback: dark background
-        if !drewWallpaper {
-            NSColor(white: 0.15, alpha: 1.0).setFill()
-            let bgPath = NSBezierPath(roundedRect: rect, xRadius: 4, yRadius: 4)
-            bgPath.fill()
-        }
+        NSGraphicsContext.restoreGraphicsState()
 
         // Display border — highlight when hovered
         let isHovered = hoveredDisplayID == entry.displayID
@@ -263,15 +278,33 @@ final class GridOverlayView: NSView {
         let cellW = rect.width / CGFloat(entry.columns)
         let cellH = rect.height / CGFloat(entry.rows)
 
-        // Draw grid lines (dashed)
-        NSColor.white.withAlphaComponent(0.12).setStroke()
+        // Draw grid lines — solid with subtle shadow for visibility on any background
+        // Shadow pass first (dark line underneath)
+        NSColor.black.withAlphaComponent(0.3).setStroke()
+        for col in 1..<entry.columns {
+            let x = rect.origin.x + CGFloat(col) * cellW
+            let path = NSBezierPath()
+            path.move(to: NSPoint(x: x + 1, y: rect.origin.y))
+            path.line(to: NSPoint(x: x + 1, y: rect.maxY))
+            path.lineWidth = 1.5
+            path.stroke()
+        }
+        for row in 1..<entry.rows {
+            let y = rect.origin.y + CGFloat(row) * cellH
+            let path = NSBezierPath()
+            path.move(to: NSPoint(x: rect.origin.x, y: y + 1))
+            path.line(to: NSPoint(x: rect.maxX, y: y + 1))
+            path.lineWidth = 1.5
+            path.stroke()
+        }
+        // Main grid lines (bright, on top of shadow)
+        NSColor.white.withAlphaComponent(0.25).setStroke()
         for col in 1..<entry.columns {
             let x = rect.origin.x + CGFloat(col) * cellW
             let path = NSBezierPath()
             path.move(to: NSPoint(x: x, y: rect.origin.y))
             path.line(to: NSPoint(x: x, y: rect.maxY))
             path.lineWidth = 1.0
-            path.setLineDash([4, 4], count: 2, phase: 0)
             path.stroke()
         }
         for row in 1..<entry.rows {
