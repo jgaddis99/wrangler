@@ -13,6 +13,9 @@ struct ShortcutsTab: View {
     private static let actions: [WranglerAction] = [.maximize, .center]
     private static let displayMovement: [WranglerAction] = [.nextDisplay, .previousDisplay]
 
+    /// Fixed width for the action label so all shortcut recorders align.
+    private let labelWidth: CGFloat = 160
+
     var body: some View {
         Form {
             Section("Halves") {
@@ -45,15 +48,14 @@ struct ShortcutsTab: View {
         let index = configManager.config.shortcuts.firstIndex { $0.action == action }
 
         if let index = index {
-            HStack {
+            HStack(spacing: 8) {
                 Image(systemName: action.iconName)
-                    .frame(width: 20)
+                    .frame(width: 24, alignment: .center)
                     .foregroundColor(.accentColor)
+                    .imageScale(.medium)
 
-                VStack(alignment: .leading) {
-                    Text(action.displayName)
-                        .font(.body)
-                }
+                Text(action.displayName)
+                    .frame(width: labelWidth, alignment: .leading)
 
                 Spacer()
 
@@ -77,19 +79,21 @@ struct ShortcutsTab: View {
                 ))
                 .toggleStyle(.switch)
                 .labelsHidden()
+                .help(configManager.config.shortcuts[index].enabled ? "Disable shortcut" : "Enable shortcut")
 
-                if configManager.config.shortcuts[index].keyCombo != nil {
-                    Button(action: {
-                        configManager.config.shortcuts[index].keyCombo = nil
-                        configManager.save()
-                    }) {
-                        Image(systemName: "xmark.circle.fill")
-                            .foregroundColor(.secondary)
-                    }
-                    .buttonStyle(.borderless)
-                    .help("Clear shortcut")
+                Button(action: {
+                    configManager.config.shortcuts[index].keyCombo = nil
+                    configManager.save()
+                }) {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundStyle(.secondary)
                 }
+                .buttonStyle(.borderless)
+                .help("Clear shortcut")
+                .opacity(configManager.config.shortcuts[index].keyCombo != nil ? 1 : 0)
+                .disabled(configManager.config.shortcuts[index].keyCombo == nil)
             }
+            .padding(.vertical, 2)
         }
     }
 }

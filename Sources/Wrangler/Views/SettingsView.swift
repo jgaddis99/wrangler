@@ -1,7 +1,7 @@
 // Sources/Wrangler/Views/SettingsView.swift
 //
 // Main settings window with a tabbed interface for General,
-// Displays, and Shortcuts configuration panes.
+// Displays, Shortcuts, and Zones configuration panes.
 
 import SwiftUI
 
@@ -31,6 +31,6 @@ struct SettingsView: View {
                     Label("Zones", systemImage: "square.grid.3x3")
                 }
         }
-        .frame(width: 560, height: 520)
+        .frame(minWidth: 560, minHeight: 520)
     }
 }

@@ -9,6 +9,9 @@ import SwiftUI
 struct GeneralTab: View {
     @ObservedObject var configManager: ConfigManager
 
+    /// Consistent width for leading labels in HStack rows.
+    private let labelWidth: CGFloat = 170
+
     var body: some View {
         Form {
             Section("System") {
@@ -32,7 +35,8 @@ struct GeneralTab: View {
 
             Section("Grid Overlay") {
                 HStack {
-                    Text("Overlay shortcut:")
+                    Text("Overlay shortcut")
+                        .frame(width: labelWidth, alignment: .leading)
                     ShortcutRecorderView(keyCombo: $configManager.config.general.overlayShortcut)
                         .frame(width: 140)
                         .onChange(of: configManager.config.general.overlayShortcut) { _, _ in
@@ -44,20 +48,24 @@ struct GeneralTab: View {
                     .onChange(of: configManager.config.general.autoShowOverlay) { _, _ in
                         configManager.save()
                     }
+                    .help("Automatically display the grid overlay when you start dragging a window")
             }
 
             Section("Behavior") {
                 Toggle("Show live preview on display during drag", isOn: $configManager.config.general.showLivePreview)
                     .onChange(of: configManager.config.general.showLivePreview) { _, _ in configManager.save() }
+                    .help("Highlight the target zone on the display while dragging a window")
 
                 HStack {
-                    Text("Auto-hide overlay delay:")
+                    Text("Auto-hide overlay delay")
+                        .frame(width: labelWidth, alignment: .leading)
                     Slider(value: $configManager.config.general.autoHideOverlayDelay, in: 1...10, step: 0.5)
                         .onChange(of: configManager.config.general.autoHideOverlayDelay) { _, _ in configManager.save() }
                     Text("\(configManager.config.general.autoHideOverlayDelay, specifier: "%.1f")s")
                         .monospacedDigit()
-                        .frame(width: 35)
+                        .frame(width: 40, alignment: .trailing)
                 }
+                .help("Seconds of inactivity before the overlay hides itself")
             }
 
             Section("Menu Bar") {
@@ -68,30 +76,34 @@ struct GeneralTab: View {
                     }
                 Text("Hiding the menu bar icon is disabled in v0.1 to prevent lockout.")
                     .font(.caption)
-                    .foregroundColor(.secondary)
+                    .foregroundStyle(.secondary)
             }
 
             Section("Accessibility") {
-                HStack {
+                HStack(spacing: 8) {
                     if PermissionManager.isAccessibilityGranted {
                         Image(systemName: "checkmark.circle.fill")
-                            .foregroundColor(.green)
+                            .foregroundStyle(.green)
+                            .imageScale(.large)
                         Text("Accessibility permission granted")
                     } else {
                         Image(systemName: "exclamationmark.triangle.fill")
-                            .foregroundColor(.orange)
+                            .foregroundStyle(.orange)
+                            .imageScale(.large)
                         Text("Accessibility permission required")
+                        Spacer()
                         Button("Grant Permission") {
                             PermissionManager.requestWithPrompt()
                         }
                     }
                 }
             }
+
             Section {
                 Button("Restore All Defaults") {
                     configManager.resetToDefaults()
                 }
-                .foregroundColor(.red)
+                .foregroundStyle(.red)
             }
         }
         .formStyle(.grouped)

@@ -10,11 +10,22 @@ struct DisplaysTab: View {
     @ObservedObject var configManager: ConfigManager
     @ObservedObject var displayDetector: DisplayDetector
 
+    /// Consistent width for stepper labels so they align vertically.
+    private let stepperLabelWidth: CGFloat = 70
+
     var body: some View {
         Form {
             if displayDetector.displays.isEmpty {
-                Text("No displays detected")
-                    .foregroundColor(.secondary)
+                Section {
+                    HStack(spacing: 8) {
+                        Image(systemName: "display.trianglebadge.exclamationmark")
+                            .foregroundStyle(.secondary)
+                            .imageScale(.large)
+                        Text("No displays detected")
+                            .foregroundStyle(.secondary)
+                    }
+                    .padding(.vertical, 4)
+                }
             } else {
                 ForEach(displayDetector.displays) { display in
                     displaySection(for: display)
@@ -34,15 +45,18 @@ struct DisplaysTab: View {
 
         Section {
             HStack(alignment: .top, spacing: 20) {
-                VStack(alignment: .leading, spacing: 12) {
-                    Text(display.name)
-                        .font(.headline)
-                    Text("\(Int(display.frame.width))x\(Int(display.frame.height))")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                VStack(alignment: .leading, spacing: 10) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(display.name)
+                            .font(.headline)
+                        Text("\(Int(display.frame.width))\u{00D7}\(Int(display.frame.height))")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
 
                     HStack {
-                        Text("Columns:")
+                        Text("Columns")
+                            .frame(width: stepperLabelWidth, alignment: .leading)
                         Stepper(
                             "\(binding.wrappedValue.columns)",
                             value: binding.columns,
@@ -50,9 +64,11 @@ struct DisplaysTab: View {
                         )
                         .onChange(of: binding.wrappedValue.columns) { _, _ in configManager.save() }
                     }
+                    .help("Number of vertical grid divisions")
 
                     HStack {
-                        Text("Rows:")
+                        Text("Rows")
+                            .frame(width: stepperLabelWidth, alignment: .leading)
                         Stepper(
                             "\(binding.wrappedValue.rows)",
                             value: binding.rows,
@@ -60,22 +76,23 @@ struct DisplaysTab: View {
                         )
                         .onChange(of: binding.wrappedValue.rows) { _, _ in configManager.save() }
                     }
-                    Text("\(binding.wrappedValue.columns)\u{00D7}\(binding.wrappedValue.rows) grid")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                    .help("Number of horizontal grid divisions")
 
                     HStack {
-                        Text("Gap:")
+                        Text("Gap")
+                            .frame(width: stepperLabelWidth, alignment: .leading)
                         Stepper(
-                            "\(binding.wrappedValue.gap)px",
+                            "\(binding.wrappedValue.gap) px",
                             value: binding.gap,
                             in: 0...50
                         )
                         .onChange(of: binding.wrappedValue.gap) { _, _ in configManager.save() }
                     }
-                    Text("Space between snapped windows")
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
+                    .help("Pixel gap between snapped windows")
+
+                    Text("\(binding.wrappedValue.columns)\u{00D7}\(binding.wrappedValue.rows) grid")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
                 }
 
                 Spacer()
@@ -87,6 +104,7 @@ struct DisplaysTab: View {
                     displaySize: display.frame.size
                 )
             }
+            .padding(.vertical, 4)
         }
     }
 

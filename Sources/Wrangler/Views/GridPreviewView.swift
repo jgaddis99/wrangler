@@ -30,14 +30,18 @@ struct GridPreviewView: View {
                     let x = CGFloat(col) * (cellW + gapF)
                     let y = CGFloat(row) * (cellH + gapF)
                     let rect = CGRect(x: x, y: y, width: cellW, height: cellH)
-                    let path = Path(roundedRect: rect, cornerRadius: 2)
-                    context.fill(path, with: .color(.accentColor.opacity(0.25)))
-                    context.stroke(path, with: .color(.accentColor.opacity(0.7)), lineWidth: 1)
+                    let path = Path(roundedRect: rect, cornerRadius: 3)
+                    context.fill(path, with: .color(.accentColor.opacity(0.2)))
+                    context.stroke(path, with: .color(.accentColor.opacity(0.6)), lineWidth: 1)
                 }
             }
         }
         .frame(width: previewWidth, height: previewHeight)
         .background(Color(nsColor: .windowBackgroundColor).opacity(0.5))
         .clipShape(RoundedRectangle(cornerRadius: 6))
+        .overlay(
+            RoundedRectangle(cornerRadius: 6)
+                .strokeBorder(Color.primary.opacity(0.1), lineWidth: 1)
+        )
     }
 }
