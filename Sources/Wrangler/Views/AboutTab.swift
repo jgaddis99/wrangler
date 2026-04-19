@@ -32,7 +32,7 @@ struct AboutTab: View {
                     Text("Wrangler")
                         .font(.system(size: 26, weight: .bold))
 
-                    Text("Version \(version) (\(build))")
+                    Text("Version \(version)")
                         .font(.system(size: 12))
                         .foregroundStyle(.secondary)
                 }
