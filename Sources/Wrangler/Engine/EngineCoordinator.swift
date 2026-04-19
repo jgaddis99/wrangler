@@ -6,6 +6,7 @@
 // for all window management operations.
 
 import AppKit
+import ApplicationServices
 import Combine
 import Foundation
 import os.log
@@ -26,6 +27,8 @@ final class EngineCoordinator: ObservableObject {
     private let snapPreview = SnapPreviewWindow()
     private let dragDetector = DragDetector()
     private var overlayIsOpen = false
+    private var overlayTriggeredManually = false
+    private var capturedWindow: AXUIElement?  // Window captured before overlay opens
 
     func start(configManager: ConfigManager) {
         self.configManager = configManager
@@ -204,7 +207,14 @@ final class EngineCoordinator: ObservableObject {
     }
 
     func snapFocusedWindowToPosition(_ position: GridPosition, onDisplay displayID: UInt32, config: WranglerConfig) {
-        guard case .success(let window) = windowManager.getFocusedWindow() else { return }
+        // Use the captured window if available (overlay steals AX focus), else get current
+        let window: AXUIElement
+        if let captured = capturedWindow {
+            window = captured
+        } else {
+            guard case .success(let focused) = windowManager.getFocusedWindow() else { return }
+            window = focused
+        }
 
         let displayConfig = config.displays.first { $0.displayID == displayID }
         let columns = displayConfig?.columns ?? 4
@@ -222,8 +232,17 @@ final class EngineCoordinator: ObservableObject {
 
     // MARK: - Overlay
 
-    func showOverlay(configManager: ConfigManager) {
+    func showOverlay(configManager: ConfigManager, manual: Bool = false) {
         guard !overlayIsOpen else { return }
+
+        // Capture the focused window BEFORE showing the overlay panel,
+        // because once the panel appears it may steal AX focus.
+        if case .success(let window) = windowManager.getFocusedWindow() {
+            capturedWindow = window
+            wranglerLog("Wrangler: Captured focused window for overlay snap")
+        }
+
+        wranglerLog("Wrangler: Showing overlay (manual=\(manual))")
         let displays = displayDetector.displays
         let configs = configManager.config.displays
 
@@ -234,21 +253,25 @@ final class EngineCoordinator: ObservableObject {
             overlayPanel?.updateDisplays(displays, configs: configs)
         }
 
+        overlayTriggeredManually = manual
         overlayPanel?.showOverlay()
         overlayIsOpen = true
     }
 
     func hideOverlay() {
+        wranglerLog("Wrangler: Hiding overlay")
         overlayPanel?.hideOverlay()
         snapPreview.hidePreview()
         overlayIsOpen = false
+        overlayTriggeredManually = false
+        capturedWindow = nil
     }
 
     func toggleOverlay(configManager: ConfigManager) {
         if overlayIsOpen {
             hideOverlay()
         } else {
-            showOverlay(configManager: configManager)
+            showOverlay(configManager: configManager, manual: true)
         }
     }
 
@@ -257,12 +280,20 @@ final class EngineCoordinator: ObservableObject {
         dragDetector.start { [weak self] isDragging in
             guard let self = self, let cm = self.configManager else { return }
             if isDragging {
-                self.showOverlay(configManager: cm)
+                self.showOverlay(configManager: cm, manual: false)
             } else {
-                if self.overlayIsOpen {
-                    // Give user a moment to interact with the overlay
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { [weak self] in
-                        guard let self = self, self.overlayIsOpen else { return }
+                // Only auto-hide if the overlay was auto-shown (not manually triggered)
+                // and the mouse is NOT over the overlay panel
+                if self.overlayIsOpen && !self.overlayTriggeredManually {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) { [weak self] in
+                        guard let self = self, self.overlayIsOpen, !self.overlayTriggeredManually else { return }
+                        // Don't hide if mouse is hovering over the overlay
+                        if let panel = self.overlayPanel, let window = panel as NSWindow? {
+                            let mouseLocation = NSEvent.mouseLocation
+                            if window.frame.contains(mouseLocation) {
+                                return // Mouse is over overlay, keep it open
+                            }
+                        }
                         self.hideOverlay()
                     }
                 }
@@ -278,6 +309,7 @@ extension EngineCoordinator: GridOverlayViewDelegate {
     func gridOverlayView(_ view: GridOverlayView, didSelectZone position: GridPosition, onDisplay displayID: UInt32) {
         guard let config = configManager?.config else { return }
         snapFocusedWindowToPosition(position, onDisplay: displayID, config: config)
+        hideOverlay()
     }
 
     func gridOverlayView(_ view: GridOverlayView, didRightClickZone position: GridPosition, onDisplay displayID: UInt32) {

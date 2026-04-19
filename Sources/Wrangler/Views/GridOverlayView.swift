@@ -19,7 +19,7 @@ final class GridOverlayView: NSView {
 
     private var displays: [DisplayDetector.DetectedDisplay] = []
     private var configs: [DisplayConfig] = []
-    private var displayRects: [(displayID: UInt32, rect: NSRect, columns: Int, rows: Int)] = []
+    private var displayRects: [(displayID: UInt32, name: String, rect: NSRect, columns: Int, rows: Int)] = []
 
     // Drag state
     private var isDragging = false
@@ -28,6 +28,10 @@ final class GridOverlayView: NSView {
     private var dragDisplayID: UInt32?
     private var dragStartCell: (col: Int, row: Int)?
     private var dragCurrentCell: (col: Int, row: Int)?
+
+    // Hover state
+    private var hoveredDisplayID: UInt32?
+    private var trackingArea: NSTrackingArea?
 
     private let padding: CGFloat = 20
     private let displayGap: CGFloat = 10
@@ -112,20 +116,50 @@ final class GridOverlayView: NSView {
             let columns = config?.columns ?? 4
             let rows = config?.rows ?? 4
 
-            // No Y-inversion needed since isFlipped handles top-left origin
+            // Y-inversion needed: NSScreen puts bottom monitor at y=0, but in our
+            // flipped view (top-left origin) we want the top monitor drawn at the top.
             let rect = NSRect(
                 x: offsetX + (display.frame.origin.x - minX) * scale,
-                y: offsetY + (display.frame.origin.y - minY) * scale,
+                y: offsetY + (maxY - display.frame.origin.y - display.frame.height) * scale,
                 width: display.frame.width * scale,
                 height: display.frame.height * scale
             )
-            displayRects.append((displayID: display.id, rect: rect, columns: columns, rows: rows))
+            displayRects.append((displayID: display.id, name: display.name, rect: rect, columns: columns, rows: rows))
         }
     }
 
     override func layout() {
         super.layout()
         recalculateLayout()
+    }
+
+    override func updateTrackingAreas() {
+        super.updateTrackingAreas()
+        if let existing = trackingArea {
+            removeTrackingArea(existing)
+        }
+        let area = NSTrackingArea(
+            rect: bounds,
+            options: [.mouseMoved, .activeAlways, .mouseEnteredAndExited],
+            owner: self,
+            userInfo: nil
+        )
+        addTrackingArea(area)
+        trackingArea = area
+    }
+
+    override func mouseMoved(with event: NSEvent) {
+        let point = convert(event.locationInWindow, from: nil)
+        let newHover = hitTestGrid(point)?.displayID
+        if newHover != hoveredDisplayID {
+            hoveredDisplayID = newHover
+            needsDisplay = true
+        }
+    }
+
+    override func mouseExited(with event: NSEvent) {
+        hoveredDisplayID = nil
+        needsDisplay = true
     }
 
     // MARK: - Drawing
@@ -155,18 +189,61 @@ final class GridOverlayView: NSView {
         str.draw(at: point)
     }
 
-    private func drawDisplay(_ entry: (displayID: UInt32, rect: NSRect, columns: Int, rows: Int)) {
+    private func drawDisplay(_ entry: (displayID: UInt32, name: String, rect: NSRect, columns: Int, rows: Int)) {
         let rect = entry.rect
 
-        // Display background
-        NSColor(white: 0.15, alpha: 1.0).setFill()
-        let bgPath = NSBezierPath(roundedRect: rect, xRadius: 4, yRadius: 4)
-        bgPath.fill()
+        // Try to draw desktop wallpaper as background
+        var drewWallpaper = false
+        if let screen = NSScreen.screens.first(where: { $0.displayID == entry.displayID }) {
+            if let wallpaperURL = NSWorkspace.shared.desktopImageURL(for: screen),
+               let image = NSImage(contentsOf: wallpaperURL) {
+                // Save graphics state and flip vertically for correct image orientation
+                // (isFlipped=true on the view inverts image drawing)
+                NSGraphicsContext.saveGraphicsState()
+                let transform = NSAffineTransform()
+                transform.translateX(by: 0, yBy: rect.origin.y + rect.height)
+                transform.scaleX(by: 1, yBy: -1)
+                transform.translateX(by: 0, yBy: -rect.origin.y)
+                transform.concat()
+                image.draw(in: rect, from: .zero, operation: .sourceOver, fraction: 0.6)
+                NSGraphicsContext.restoreGraphicsState()
+                drewWallpaper = true
+            }
+        }
 
-        // Display border
-        NSColor(white: 0.3, alpha: 1.0).setStroke()
-        bgPath.lineWidth = 1
-        bgPath.stroke()
+        // Fallback: dark background
+        if !drewWallpaper {
+            NSColor(white: 0.15, alpha: 1.0).setFill()
+            let bgPath = NSBezierPath(roundedRect: rect, xRadius: 4, yRadius: 4)
+            bgPath.fill()
+        }
+
+        // Display border — highlight when hovered
+        let isHovered = hoveredDisplayID == entry.displayID
+        let borderColor = isHovered ? NSColor.systemBlue : NSColor(white: 0.4, alpha: 1.0)
+        let borderWidth: CGFloat = isHovered ? 3.0 : 1.5
+        borderColor.setStroke()
+        let borderPath = NSBezierPath(roundedRect: rect, xRadius: 4, yRadius: 4)
+        borderPath.lineWidth = borderWidth
+        borderPath.stroke()
+
+        // Display name label
+        let nameAttrs: [NSAttributedString.Key: Any] = [
+            .foregroundColor: NSColor.white.withAlphaComponent(0.8),
+            .font: NSFont.systemFont(ofSize: 10, weight: .medium)
+        ]
+        let nameStr = NSAttributedString(string: entry.name, attributes: nameAttrs)
+        let nameSize = nameStr.size()
+        // Draw name at bottom-center of the display preview
+        let namePoint = NSPoint(
+            x: rect.origin.x + (rect.width - nameSize.width) / 2,
+            y: rect.maxY - nameSize.height - 4
+        )
+        // Semi-transparent background behind text for readability
+        let labelBg = NSRect(x: namePoint.x - 4, y: namePoint.y - 2, width: nameSize.width + 8, height: nameSize.height + 4)
+        NSColor(white: 0, alpha: 0.5).setFill()
+        NSBezierPath(roundedRect: labelBg, xRadius: 3, yRadius: 3).fill()
+        nameStr.draw(at: namePoint)
 
         // Grid cells
         let cellW = rect.width / CGFloat(entry.columns)

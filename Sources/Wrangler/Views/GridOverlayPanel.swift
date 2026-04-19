@@ -28,7 +28,7 @@ final class GridOverlayPanel: NSPanel {
         titleVisibility = .hidden
         isFloatingPanel = true
         level = .floating
-        isMovableByWindowBackground = true
+        isMovableByWindowBackground = false
         hidesOnDeactivate = false
         backgroundColor = NSColor(white: 0.1, alpha: 0.95)
 
