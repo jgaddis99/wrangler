@@ -6,6 +6,10 @@ Built for power users who live in terminals and need fast, keyboard-driven windo
 
 ![Grid Overlay](screenshots/overlay.png)
 
+| Settings | Menu Bar |
+|----------|----------|
+| ![Settings](screenshots/settings.png) | ![Menu Bar](screenshots/menu-bar.png) |
+
 ## Download
 
 Grab the latest DMG from [Releases](https://github.com/jgaddis99/wrangler/releases). Drag Wrangler to Applications, launch it, and grant Accessibility permission when prompted.
