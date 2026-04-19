@@ -2,6 +2,7 @@
 //
 // General settings tab: launch at login, window target mode,
 // global activation shortcut, and menu bar visibility toggle.
+// Uses a compact VStack layout to fit without scrolling.
 
 import ServiceManagement
 import SwiftUI
@@ -13,101 +14,138 @@ struct GeneralTab: View {
     private let labelWidth: CGFloat = 170
 
     var body: some View {
-        Form {
-            Section("System") {
-                Toggle("Launch at login", isOn: $configManager.config.general.launchAtLogin)
-                    .onChange(of: configManager.config.general.launchAtLogin) { _, newValue in
-                        setLaunchAtLogin(newValue)
-                        configManager.save()
-                    }
-            }
-
-            Section("Window Target") {
-                Picker("Which window to manage:", selection: $configManager.config.general.windowTarget) {
-                    Text("Front-most active window").tag(WindowTarget.frontMost)
-                    Text("Window under mouse cursor").tag(WindowTarget.underCursor)
-                }
-                .pickerStyle(.radioGroup)
-                .onChange(of: configManager.config.general.windowTarget) { _, _ in
-                    configManager.save()
-                }
-            }
-
-            Section("Grid Overlay") {
-                HStack {
-                    Text("Overlay shortcut")
-                        .frame(width: labelWidth, alignment: .leading)
-                    ShortcutRecorderView(keyCombo: $configManager.config.general.overlayShortcut)
-                        .frame(width: 140)
-                        .onChange(of: configManager.config.general.overlayShortcut) { _, _ in
+        VStack(spacing: 0) {
+            VStack(spacing: 12) {
+                // System
+                settingsSection("System") {
+                    Toggle("Launch at login", isOn: $configManager.config.general.launchAtLogin)
+                        .onChange(of: configManager.config.general.launchAtLogin) { _, newValue in
+                            setLaunchAtLogin(newValue)
                             configManager.save()
                         }
                 }
 
-                Toggle("Auto-show overlay when dragging windows", isOn: $configManager.config.general.autoShowOverlay)
-                    .onChange(of: configManager.config.general.autoShowOverlay) { _, _ in
+                // Window Target
+                settingsSection("Window Target") {
+                    Picker("Which window to manage:", selection: $configManager.config.general.windowTarget) {
+                        Text("Front-most active window").tag(WindowTarget.frontMost)
+                        Text("Window under mouse cursor").tag(WindowTarget.underCursor)
+                    }
+                    .pickerStyle(.radioGroup)
+                    .onChange(of: configManager.config.general.windowTarget) { _, _ in
                         configManager.save()
                     }
-                    .help("Automatically display the grid overlay when you start dragging a window")
-            }
-
-            Section("Behavior") {
-                Toggle("Show live preview on display during drag", isOn: $configManager.config.general.showLivePreview)
-                    .onChange(of: configManager.config.general.showLivePreview) { _, _ in configManager.save() }
-                    .help("Highlight the target zone on the display while dragging a window")
-
-                HStack {
-                    Text("Auto-hide overlay delay")
-                        .frame(width: labelWidth, alignment: .leading)
-                    Slider(value: $configManager.config.general.autoHideOverlayDelay, in: 1...10, step: 0.5)
-                        .onChange(of: configManager.config.general.autoHideOverlayDelay) { _, _ in configManager.save() }
-                    Text("\(configManager.config.general.autoHideOverlayDelay, specifier: "%.1f")s")
-                        .monospacedDigit()
-                        .frame(width: 40, alignment: .trailing)
                 }
-                .help("Seconds of inactivity before the overlay hides itself")
-            }
 
-            Section("Menu Bar") {
-                Toggle("Hide menu bar icon", isOn: $configManager.config.general.hideMenuBarIcon)
-                    .disabled(true)
-                    .onChange(of: configManager.config.general.hideMenuBarIcon) { _, _ in
-                        configManager.save()
+                // Grid Overlay
+                settingsSection("Grid Overlay") {
+                    HStack {
+                        Text("Overlay shortcut")
+                            .frame(width: labelWidth, alignment: .leading)
+                        ShortcutRecorderView(keyCombo: $configManager.config.general.overlayShortcut)
+                            .frame(width: 140)
+                            .onChange(of: configManager.config.general.overlayShortcut) { _, _ in
+                                configManager.save()
+                            }
                     }
-                Text("Hiding the menu bar icon is disabled in v0.1 to prevent lockout.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
 
-            Section("Accessibility") {
-                HStack(spacing: 8) {
-                    if PermissionManager.isAccessibilityGranted {
-                        Image(systemName: "checkmark.circle.fill")
-                            .foregroundStyle(.green)
-                            .imageScale(.large)
-                        Text("Accessibility permission granted")
-                    } else {
-                        Image(systemName: "exclamationmark.triangle.fill")
-                            .foregroundStyle(.orange)
-                            .imageScale(.large)
-                        Text("Accessibility permission required")
-                        Spacer()
-                        Button("Grant Permission") {
-                            PermissionManager.requestWithPrompt()
+                    Toggle("Auto-show overlay when dragging windows", isOn: $configManager.config.general.autoShowOverlay)
+                        .onChange(of: configManager.config.general.autoShowOverlay) { _, _ in
+                            configManager.save()
+                        }
+                        .help("Automatically display the grid overlay when you start dragging a window")
+                }
+
+                // Behavior
+                settingsSection("Behavior") {
+                    Toggle("Show live preview on display during drag", isOn: $configManager.config.general.showLivePreview)
+                        .onChange(of: configManager.config.general.showLivePreview) { _, _ in configManager.save() }
+                        .help("Highlight the target zone on the display while dragging a window")
+
+                    HStack {
+                        Text("Auto-hide overlay delay")
+                            .frame(width: labelWidth, alignment: .leading)
+                        Slider(value: $configManager.config.general.autoHideOverlayDelay, in: 1...10, step: 0.5)
+                            .onChange(of: configManager.config.general.autoHideOverlayDelay) { _, _ in configManager.save() }
+                        Text("\(configManager.config.general.autoHideOverlayDelay, specifier: "%.1f")s")
+                            .monospacedDigit()
+                            .frame(width: 36, alignment: .trailing)
+                    }
+                    .help("Seconds of inactivity before the overlay hides itself")
+                }
+
+                // Menu Bar
+                settingsSection("Menu Bar") {
+                    Toggle("Hide menu bar icon", isOn: $configManager.config.general.hideMenuBarIcon)
+                        .disabled(true)
+                        .onChange(of: configManager.config.general.hideMenuBarIcon) { _, _ in
+                            configManager.save()
+                        }
+                    Text("Hiding the menu bar icon is disabled in v0.1 to prevent lockout.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+
+                // Accessibility
+                settingsSection("Accessibility") {
+                    HStack(spacing: 8) {
+                        if PermissionManager.isAccessibilityGranted {
+                            Image(systemName: "checkmark.circle.fill")
+                                .foregroundStyle(.green)
+                                .imageScale(.large)
+                            Text("Accessibility permission granted")
+                        } else {
+                            Image(systemName: "exclamationmark.triangle.fill")
+                                .foregroundStyle(.orange)
+                                .imageScale(.large)
+                            Text("Accessibility permission required")
+                            Spacer()
+                            Button("Grant Permission") {
+                                PermissionManager.requestWithPrompt()
+                            }
                         }
                     }
                 }
-            }
 
-            Section {
-                Button("Restore All Defaults") {
-                    configManager.resetToDefaults()
+                // Reset
+                HStack {
+                    Spacer()
+                    Button("Restore All Defaults") {
+                        configManager.resetToDefaults()
+                    }
+                    .foregroundStyle(.red)
+                    Spacer()
                 }
-                .foregroundStyle(.red)
+                .padding(.top, 4)
             }
+            .padding(.horizontal, 24)
+            .padding(.vertical, 16)
+
+            Spacer(minLength: 0)
         }
-        .formStyle(.grouped)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    @ViewBuilder
+    private func settingsSection(_ title: String, @ViewBuilder content: () -> some View) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(title)
+                .font(.system(size: 11, weight: .medium))
+                .foregroundStyle(.secondary)
+                .textCase(.uppercase)
+            VStack(alignment: .leading, spacing: 6) {
+                content()
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 8)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(Color(nsColor: .controlBackgroundColor))
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .overlay(
+                RoundedRectangle(cornerRadius: 8)
+                    .strokeBorder(Color.primary.opacity(0.06), lineWidth: 1)
+            )
+        }
     }
 
     private func setLaunchAtLogin(_ enabled: Bool) {

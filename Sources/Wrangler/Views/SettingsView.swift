@@ -2,6 +2,7 @@
 //
 // Main settings window with a tabbed interface for General,
 // Displays, Shortcuts, and Zones configuration panes.
+// Uses a taller frame to eliminate scrolling.
 
 import SwiftUI
 
@@ -31,6 +32,7 @@ struct SettingsView: View {
                     Label("Zones", systemImage: "square.grid.3x3")
                 }
         }
-        .frame(minWidth: 560, minHeight: 520)
+        .tabViewStyle(.automatic)
+        .frame(minWidth: 580, minHeight: 600)
     }
 }

@@ -2,6 +2,7 @@
 //
 // Shortcuts settings tab: lists all available window actions
 // with configurable keyboard shortcuts and enable/disable toggles.
+// Uses a compact row layout to fit all 12 shortcuts without scrolling.
 
 import SwiftUI
 
@@ -14,33 +15,49 @@ struct ShortcutsTab: View {
     private static let displayMovement: [WranglerAction] = [.nextDisplay, .previousDisplay]
 
     /// Fixed width for the action label so all shortcut recorders align.
-    private let labelWidth: CGFloat = 160
+    private let labelWidth: CGFloat = 150
 
     var body: some View {
-        Form {
-            Section("Halves") {
-                ForEach(Self.halves) { action in
-                    shortcutRow(for: action)
-                }
+        VStack(spacing: 0) {
+            VStack(spacing: 10) {
+                shortcutSection("Halves", actions: Self.halves)
+                shortcutSection("Quarters", actions: Self.quarters)
+                shortcutSection("Actions", actions: Self.actions)
+                shortcutSection("Display Movement", actions: Self.displayMovement)
             }
-            Section("Quarters") {
-                ForEach(Self.quarters) { action in
-                    shortcutRow(for: action)
-                }
-            }
-            Section("Actions") {
-                ForEach(Self.actions) { action in
-                    shortcutRow(for: action)
-                }
-            }
-            Section("Display Movement") {
-                ForEach(Self.displayMovement) { action in
-                    shortcutRow(for: action)
-                }
-            }
+            .padding(.horizontal, 24)
+            .padding(.vertical, 14)
+
+            Spacer(minLength: 0)
         }
-        .formStyle(.grouped)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    @ViewBuilder
+    private func shortcutSection(_ title: String, actions: [WranglerAction]) -> some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Text(title)
+                .font(.system(size: 11, weight: .medium))
+                .foregroundStyle(.secondary)
+                .textCase(.uppercase)
+                .padding(.bottom, 4)
+
+            VStack(spacing: 0) {
+                ForEach(Array(actions.enumerated()), id: \.element.id) { idx, action in
+                    if idx > 0 {
+                        Divider()
+                            .padding(.horizontal, 10)
+                    }
+                    shortcutRow(for: action)
+                }
+            }
+            .background(Color(nsColor: .controlBackgroundColor))
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .overlay(
+                RoundedRectangle(cornerRadius: 8)
+                    .strokeBorder(Color.primary.opacity(0.06), lineWidth: 1)
+            )
+        }
     }
 
     @ViewBuilder
@@ -48,13 +65,14 @@ struct ShortcutsTab: View {
         let index = configManager.config.shortcuts.firstIndex { $0.action == action }
 
         if let index = index {
-            HStack(spacing: 8) {
+            HStack(spacing: 6) {
                 Image(systemName: action.iconName)
-                    .frame(width: 24, alignment: .center)
+                    .frame(width: 20, alignment: .center)
                     .foregroundColor(.accentColor)
-                    .imageScale(.medium)
+                    .imageScale(.small)
 
                 Text(action.displayName)
+                    .font(.system(size: 12))
                     .frame(width: labelWidth, alignment: .leading)
 
                 Spacer()
@@ -68,7 +86,7 @@ struct ShortcutsTab: View {
                         }
                     )
                 )
-                .frame(width: 140)
+                .frame(width: 130)
 
                 Toggle("", isOn: Binding(
                     get: { configManager.config.shortcuts[index].enabled },
@@ -78,6 +96,7 @@ struct ShortcutsTab: View {
                     }
                 ))
                 .toggleStyle(.switch)
+                .controlSize(.mini)
                 .labelsHidden()
                 .help(configManager.config.shortcuts[index].enabled ? "Disable shortcut" : "Enable shortcut")
 
@@ -87,13 +106,15 @@ struct ShortcutsTab: View {
                 }) {
                     Image(systemName: "xmark.circle.fill")
                         .foregroundStyle(.secondary)
+                        .imageScale(.small)
                 }
                 .buttonStyle(.borderless)
                 .help("Clear shortcut")
                 .opacity(configManager.config.shortcuts[index].keyCombo != nil ? 1 : 0)
                 .disabled(configManager.config.shortcuts[index].keyCombo == nil)
             }
-            .padding(.vertical, 2)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 5)
         }
     }
 }

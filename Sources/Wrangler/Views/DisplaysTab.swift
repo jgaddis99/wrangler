@@ -1,8 +1,8 @@
 // Sources/Wrangler/Views/DisplaysTab.swift
 //
 // Displays settings tab: shows detected monitors with per-display
-// grid configuration (columns, rows, gap) and a visual preview
-// of the grid layout.
+// grid configuration using dropdown pickers and a wallpaper-backed
+// grid preview matching the overlay appearance.
 
 import SwiftUI
 
@@ -10,29 +10,31 @@ struct DisplaysTab: View {
     @ObservedObject var configManager: ConfigManager
     @ObservedObject var displayDetector: DisplayDetector
 
-    /// Consistent width for stepper labels so they align vertically.
-    private let stepperLabelWidth: CGFloat = 70
+    private let gapValues: [Int] = [0, 2, 4, 8, 12, 16, 20]
 
     var body: some View {
-        Form {
+        VStack(spacing: 0) {
             if displayDetector.displays.isEmpty {
-                Section {
-                    HStack(spacing: 8) {
-                        Image(systemName: "display.trianglebadge.exclamationmark")
-                            .foregroundStyle(.secondary)
-                            .imageScale(.large)
-                        Text("No displays detected")
-                            .foregroundStyle(.secondary)
-                    }
-                    .padding(.vertical, 4)
+                Spacer()
+                VStack(spacing: 8) {
+                    Image(systemName: "display.trianglebadge.exclamationmark")
+                        .font(.system(size: 32))
+                        .foregroundStyle(.secondary)
+                    Text("No displays detected")
+                        .font(.body)
+                        .foregroundStyle(.secondary)
                 }
+                Spacer()
             } else {
-                ForEach(displayDetector.displays) { display in
-                    displaySection(for: display)
+                VStack(spacing: 16) {
+                    ForEach(displayDetector.displays) { display in
+                        displayCard(for: display)
+                    }
                 }
+                .padding(.horizontal, 24)
+                .padding(.vertical, 16)
             }
         }
-        .formStyle(.grouped)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .onAppear {
             syncDisplayConfigs()
@@ -40,72 +42,104 @@ struct DisplaysTab: View {
     }
 
     @ViewBuilder
-    private func displaySection(for display: DisplayDetector.DetectedDisplay) -> some View {
+    private func displayCard(for display: DisplayDetector.DetectedDisplay) -> some View {
         let binding = displayConfigBinding(for: display)
 
-        Section {
-            HStack(alignment: .top, spacing: 20) {
-                VStack(alignment: .leading, spacing: 10) {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(display.name)
-                            .font(.headline)
-                        Text("\(Int(display.frame.width))\u{00D7}\(Int(display.frame.height))")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
+        VStack(spacing: 0) {
+            // Header: display name + resolution
+            HStack {
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(display.name)
+                        .font(.system(size: 13, weight: .semibold))
+                    Text("\(Int(display.frame.width))\u{00D7}\(Int(display.frame.height))")
+                        .font(.system(size: 11))
+                        .foregroundStyle(.secondary)
+                }
+                Spacer()
+                if display.isMain {
+                    Text("Primary")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
+                        .background(.quaternary)
+                        .clipShape(RoundedRectangle(cornerRadius: 4))
+                }
+            }
+            .padding(.horizontal, 14)
+            .padding(.top, 10)
+            .padding(.bottom, 8)
 
+            Divider()
+                .padding(.horizontal, 14)
+
+            // Controls + Preview side by side
+            HStack(alignment: .center, spacing: 16) {
+                // Controls column
+                VStack(alignment: .leading, spacing: 6) {
                     HStack {
                         Text("Columns")
-                            .frame(width: stepperLabelWidth, alignment: .leading)
-                        Stepper(
-                            "\(binding.wrappedValue.columns)",
-                            value: binding.columns,
-                            in: 1...12
-                        )
+                            .font(.system(size: 12))
+                            .frame(width: 62, alignment: .leading)
+                        Picker("", selection: binding.columns) {
+                            ForEach(1...6, id: \.self) { n in
+                                Text("\(n)").tag(n)
+                            }
+                        }
+                        .pickerStyle(.menu)
+                        .frame(width: 60)
                         .onChange(of: binding.wrappedValue.columns) { _, _ in configManager.save() }
                     }
-                    .help("Number of vertical grid divisions")
 
                     HStack {
                         Text("Rows")
-                            .frame(width: stepperLabelWidth, alignment: .leading)
-                        Stepper(
-                            "\(binding.wrappedValue.rows)",
-                            value: binding.rows,
-                            in: 1...12
-                        )
+                            .font(.system(size: 12))
+                            .frame(width: 62, alignment: .leading)
+                        Picker("", selection: binding.rows) {
+                            ForEach(1...6, id: \.self) { n in
+                                Text("\(n)").tag(n)
+                            }
+                        }
+                        .pickerStyle(.menu)
+                        .frame(width: 60)
                         .onChange(of: binding.wrappedValue.rows) { _, _ in configManager.save() }
                     }
-                    .help("Number of horizontal grid divisions")
 
                     HStack {
                         Text("Gap")
-                            .frame(width: stepperLabelWidth, alignment: .leading)
-                        Stepper(
-                            "\(binding.wrappedValue.gap) px",
-                            value: binding.gap,
-                            in: 0...50
-                        )
+                            .font(.system(size: 12))
+                            .frame(width: 62, alignment: .leading)
+                        Picker("", selection: binding.gap) {
+                            ForEach(gapValues, id: \.self) { g in
+                                Text("\(g) px").tag(g)
+                            }
+                        }
+                        .pickerStyle(.menu)
+                        .frame(width: 70)
                         .onChange(of: binding.wrappedValue.gap) { _, _ in configManager.save() }
                     }
-                    .help("Pixel gap between snapped windows")
-
-                    Text("\(binding.wrappedValue.columns)\u{00D7}\(binding.wrappedValue.rows) grid")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
                 }
 
                 Spacer()
 
+                // Grid preview with wallpaper
                 GridPreviewView(
                     columns: binding.wrappedValue.columns,
                     rows: binding.wrappedValue.rows,
                     gap: binding.wrappedValue.gap,
-                    displaySize: display.frame.size
+                    displaySize: display.frame.size,
+                    displayID: display.id
                 )
             }
-            .padding(.vertical, 4)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 10)
         }
+        .background(Color(nsColor: .controlBackgroundColor))
+        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .overlay(
+            RoundedRectangle(cornerRadius: 10)
+                .strokeBorder(Color.primary.opacity(0.06), lineWidth: 1)
+        )
     }
 
     private func displayConfigBinding(for display: DisplayDetector.DetectedDisplay) -> Binding<DisplayConfig> {
