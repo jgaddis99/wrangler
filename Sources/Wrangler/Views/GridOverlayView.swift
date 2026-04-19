@@ -133,8 +133,8 @@ final class GridOverlayView: NSView {
     override func draw(_ dirtyRect: NSRect) {
         super.draw(dirtyRect)
 
-        // Draw header with focused app name
-        let headerRect = NSRect(x: 0, y: bounds.height - Self.headerHeight, width: bounds.width, height: Self.headerHeight)
+        // Draw header with focused app name (at top of view since isFlipped=true)
+        let headerRect = NSRect(x: 0, y: 0, width: bounds.width, height: Self.headerHeight)
         drawHeader(in: headerRect)
 
         // Draw each display

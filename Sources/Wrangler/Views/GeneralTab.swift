@@ -30,6 +30,22 @@ struct GeneralTab: View {
                 }
             }
 
+            Section("Grid Overlay") {
+                HStack {
+                    Text("Overlay shortcut:")
+                    ShortcutRecorderView(keyCombo: $configManager.config.general.overlayShortcut)
+                        .frame(width: 140)
+                        .onChange(of: configManager.config.general.overlayShortcut) { _, _ in
+                            configManager.save()
+                        }
+                }
+
+                Toggle("Auto-show overlay when dragging windows", isOn: $configManager.config.general.autoShowOverlay)
+                    .onChange(of: configManager.config.general.autoShowOverlay) { _, _ in
+                        configManager.save()
+                    }
+            }
+
             Section("Menu Bar") {
                 Toggle("Hide menu bar icon", isOn: $configManager.config.general.hideMenuBarIcon)
                     .disabled(true)

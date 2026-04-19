@@ -67,6 +67,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         menu.addItem(withTitle: "Move to Next Display", action: #selector(nextDisplay), keyEquivalent: "")
         menu.addItem(withTitle: "Move to Previous Display", action: #selector(previousDisplay), keyEquivalent: "")
         menu.addItem(NSMenuItem.separator())
+        menu.addItem(withTitle: "Show Grid Overlay", action: #selector(showOverlay), keyEquivalent: "")
+        menu.addItem(NSMenuItem.separator())
         menu.addItem(withTitle: "Settings…", action: #selector(openSettings), keyEquivalent: ",")
         menu.addItem(NSMenuItem.separator())
         menu.addItem(withTitle: "Quit Wrangler", action: #selector(quitApp), keyEquivalent: "q")
@@ -96,6 +98,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     @objc private func previousDisplay() {
         engine.handleAction(.previousDisplay, config: configManager.config)
+    }
+
+    @objc private func showOverlay() {
+        engine.toggleOverlay(configManager: configManager)
     }
 
     @objc private func openSettings() {
