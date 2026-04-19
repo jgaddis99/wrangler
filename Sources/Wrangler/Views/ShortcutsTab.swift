@@ -12,6 +12,7 @@ struct ShortcutsTab: View {
     private static let halves: [WranglerAction] = [.snapLeft, .snapRight, .snapTopHalf, .snapBottomHalf]
     private static let quarters: [WranglerAction] = [.snapTopLeft, .snapTopRight, .snapBottomLeft, .snapBottomRight]
     private static let thirds: [WranglerAction] = [.snapLeftThird, .snapCenterThird, .snapRightThird]
+    private static let resize: [WranglerAction] = [.growLeft, .growRight, .growUp, .growDown]
     private static let actions: [WranglerAction] = [.maximize, .center]
     private static let displayMovement: [WranglerAction] = [.nextDisplay, .previousDisplay]
 
@@ -24,6 +25,7 @@ struct ShortcutsTab: View {
                 shortcutSection("Halves", actions: Self.halves)
                 shortcutSection("Quarters", actions: Self.quarters)
                 shortcutSection("Thirds", actions: Self.thirds)
+                shortcutSection("Resize", actions: Self.resize)
                 shortcutSection("Actions", actions: Self.actions)
                 shortcutSection("Display Movement", actions: Self.displayMovement)
             }

@@ -18,6 +18,10 @@ enum WranglerAction: String, Codable, CaseIterable, Identifiable {
     case snapLeftThird
     case snapCenterThird
     case snapRightThird
+    case growLeft
+    case growRight
+    case growUp
+    case growDown
     case maximize
     case center
     case nextDisplay
@@ -38,6 +42,10 @@ enum WranglerAction: String, Codable, CaseIterable, Identifiable {
         case .snapLeftThird: "Left Third"
         case .snapCenterThird: "Center Third"
         case .snapRightThird: "Right Third"
+        case .growLeft: "Grow Left"
+        case .growRight: "Grow Right"
+        case .growUp: "Grow Up"
+        case .growDown: "Grow Down"
         case .maximize: "Maximize"
         case .center: "Center"
         case .nextDisplay: "Next Display"
@@ -58,6 +66,10 @@ enum WranglerAction: String, Codable, CaseIterable, Identifiable {
         case .snapLeftThird: "rectangle.leadingthird.inset.filled"
         case .snapCenterThird: "rectangle.center.inset.filled"
         case .snapRightThird: "rectangle.trailingthird.inset.filled"
+        case .growLeft: "arrow.left.to.line"
+        case .growRight: "arrow.right.to.line"
+        case .growUp: "arrow.up.to.line"
+        case .growDown: "arrow.down.to.line"
         case .maximize: "rectangle.fill"
         case .center: "rectangle.center.inset.filled"
         case .nextDisplay: "rectangle.righthalf.inset.arrow.right"

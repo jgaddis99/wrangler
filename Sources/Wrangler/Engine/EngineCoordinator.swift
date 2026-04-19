@@ -103,6 +103,14 @@ final class EngineCoordinator: ObservableObject {
             moveWindowInGrid(direction: .up, config: config)
         case .snapBottomHalf:
             moveWindowInGrid(direction: .down, config: config)
+        case .growLeft:
+            growWindowInGrid(direction: .left, config: config)
+        case .growRight:
+            growWindowInGrid(direction: .right, config: config)
+        case .growUp:
+            growWindowInGrid(direction: .up, config: config)
+        case .growDown:
+            growWindowInGrid(direction: .down, config: config)
         default:
             snapFocusedWindow(action: action, config: config)
         }
@@ -200,6 +208,59 @@ final class EngineCoordinator: ObservableObject {
         let frame = GridCalculator.calculateFrame(
             for: position, in: targetFrame,
             gridColumns: targetColumns, gridRows: targetRows, gap: targetGap
+        )
+        windowManager.setWindowFrame(window, frame: frame)
+    }
+
+    /// Grows the focused window by one grid cell in the specified direction.
+    /// Determines the window's current grid span and extends it.
+    private func growWindowInGrid(direction: GridDirection, config: WranglerConfig) {
+        guard case .success(let window) = windowManager.getFocusedWindow() else { return }
+        guard let currentDisplayID = windowManager.displayID(for: window) else { return }
+
+        let displayConfig = config.displays.first { $0.displayID == currentDisplayID }
+        let columns = displayConfig?.columns ?? 4
+        let rows = displayConfig?.rows ?? 4
+        let gap = displayConfig?.gap ?? 0
+
+        guard let visibleFrame = displayDetector.visibleFrame(for: currentDisplayID),
+              let windowFrame = windowManager.getWindowFrame(window) else { return }
+
+        let gapF = CGFloat(gap)
+        let totalGapX = gapF * CGFloat(columns - 1)
+        let totalGapY = gapF * CGFloat(rows - 1)
+        let cellWidth = (visibleFrame.width - totalGapX) / CGFloat(columns)
+        let cellHeight = (visibleFrame.height - totalGapY) / CGFloat(rows)
+
+        // Determine current grid position and span from the window frame
+        var col = Int(round((windowFrame.origin.x - visibleFrame.origin.x) / (cellWidth + gapF)))
+        var row = Int(round((windowFrame.origin.y - visibleFrame.origin.y) / (cellHeight + gapF)))
+        var colSpan = max(1, Int(round(windowFrame.width / cellWidth)))
+        var rowSpan = max(1, Int(round(windowFrame.height / cellHeight)))
+
+        col = max(0, min(col, columns - 1))
+        row = max(0, min(row, rows - 1))
+
+        // Grow in the specified direction
+        switch direction {
+        case .left:
+            if col > 0 { col -= 1; colSpan += 1 }
+        case .right:
+            if col + colSpan < columns { colSpan += 1 }
+        case .up:
+            if row > 0 { row -= 1; rowSpan += 1 }
+        case .down:
+            if row + rowSpan < rows { rowSpan += 1 }
+        }
+
+        // Clamp span to grid bounds
+        colSpan = min(colSpan, columns - col)
+        rowSpan = min(rowSpan, rows - row)
+
+        let position = GridPosition(column: col, row: row, columnSpan: colSpan, rowSpan: rowSpan)
+        let frame = GridCalculator.calculateFrame(
+            for: position, in: visibleFrame,
+            gridColumns: columns, gridRows: rows, gap: gap
         )
         windowManager.setWindowFrame(window, frame: frame)
     }

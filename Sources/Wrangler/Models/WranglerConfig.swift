@@ -46,6 +46,11 @@ struct WranglerConfig: Codable, Equatable {
         ActionShortcut(action: .snapLeftThird, keyCombo: KeyCombo(keyCode: 0x12, control: true, option: true, shift: false, command: false), enabled: true),   // Ctrl+Alt+1
         ActionShortcut(action: .snapCenterThird, keyCombo: KeyCombo(keyCode: 0x13, control: true, option: true, shift: false, command: false), enabled: true), // Ctrl+Alt+2
         ActionShortcut(action: .snapRightThird, keyCombo: KeyCombo(keyCode: 0x14, control: true, option: true, shift: false, command: false), enabled: true),  // Ctrl+Alt+3
+        // Grow: Ctrl+Alt+Shift+Arrow — expand window by one grid cell
+        ActionShortcut(action: .growLeft, keyCombo: KeyCombo(keyCode: 0x7B, control: true, option: true, shift: true, command: false), enabled: true),
+        ActionShortcut(action: .growRight, keyCombo: KeyCombo(keyCode: 0x7C, control: true, option: true, shift: true, command: false), enabled: true),
+        ActionShortcut(action: .growUp, keyCombo: KeyCombo(keyCode: 0x7E, control: true, option: true, shift: true, command: false), enabled: true),
+        ActionShortcut(action: .growDown, keyCombo: KeyCombo(keyCode: 0x7D, control: true, option: true, shift: true, command: false), enabled: true),
         // Actions: Ctrl+Alt+key
         ActionShortcut(action: .maximize, keyCombo: KeyCombo(keyCode: 0x24, control: true, option: true, shift: false, command: false), enabled: true),
         ActionShortcut(action: .center, keyCombo: KeyCombo(keyCode: 0x08, control: true, option: true, shift: false, command: false), enabled: true),

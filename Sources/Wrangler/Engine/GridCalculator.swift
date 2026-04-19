@@ -75,6 +75,8 @@ enum GridCalculator {
             return GridPosition(column: startCol, row: 0, columnSpan: gridColumns - startCol, rowSpan: gridRows)
         case .maximize:
             return GridPosition(column: 0, row: 0, columnSpan: gridColumns, rowSpan: gridRows)
+        case .growLeft, .growRight, .growUp, .growDown:
+            return nil // Handled by EngineCoordinator.growWindowInGrid
         case .center, .nextDisplay, .previousDisplay:
             return nil
         }
