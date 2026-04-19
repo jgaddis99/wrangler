@@ -8,6 +8,7 @@ import AppKit
 
 protocol GridOverlayViewDelegate: AnyObject {
     func gridOverlayView(_ view: GridOverlayView, didSelectZone position: GridPosition, onDisplay displayID: UInt32)
+    func gridOverlayView(_ view: GridOverlayView, didBatchSelectZone position: GridPosition, onDisplay displayID: UInt32)
     func gridOverlayView(_ view: GridOverlayView, didRightClickZone position: GridPosition, onDisplay displayID: UInt32)
     func gridOverlayView(_ view: GridOverlayView, dragUpdated position: GridPosition, onDisplay displayID: UInt32)
     func gridOverlayViewDragEnded(_ view: GridOverlayView)
@@ -25,6 +26,7 @@ final class GridOverlayView: NSView {
     private var isDragging = false
     private var isRightClick = false
     private var isShiftDrag = false
+    private var isCmdDrag = false
     private var dragDisplayID: UInt32?
     private var dragStartCell: (col: Int, row: Int)?
     private var dragCurrentCell: (col: Int, row: Int)?
@@ -295,6 +297,7 @@ final class GridOverlayView: NSView {
     override func mouseDown(with event: NSEvent) {
         let point = convert(event.locationInWindow, from: nil)
         isShiftDrag = event.modifierFlags.contains(.shift)
+        isCmdDrag = event.modifierFlags.contains(.command)
         isRightClick = false
         startDrag(at: point)
     }
@@ -356,6 +359,8 @@ final class GridOverlayView: NSView {
 
         if isRightClick || isShiftDrag {
             delegate?.gridOverlayView(self, didRightClickZone: position, onDisplay: displayID)
+        } else if isCmdDrag {
+            delegate?.gridOverlayView(self, didBatchSelectZone: position, onDisplay: displayID)
         } else {
             delegate?.gridOverlayView(self, didSelectZone: position, onDisplay: displayID)
         }

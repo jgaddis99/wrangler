@@ -79,6 +79,35 @@ final class WindowManager {
         return displayID
     }
 
+    /// Get all regular windows of the frontmost application.
+    func getAllWindowsOfFocusedApp() -> [AXUIElement] {
+        guard AXIsProcessTrusted() else { return [] }
+
+        let systemWide = AXUIElementCreateSystemWide()
+        var focusedApp: CFTypeRef?
+        let appResult = AXUIElementCopyAttributeValue(
+            systemWide, kAXFocusedApplicationAttribute as CFString, &focusedApp
+        )
+        guard appResult == .success, let focusedApp else { return [] }
+        let app = unsafeBitCast(focusedApp, to: AXUIElement.self)
+
+        var windowList: CFTypeRef?
+        let winResult = AXUIElementCopyAttributeValue(
+            app, kAXWindowsAttribute as CFString, &windowList
+        )
+        guard winResult == .success, let windowList else { return [] }
+        guard let windows = windowList as? [AXUIElement] else { return [] }
+
+        // Filter to standard windows (exclude dialogs, sheets, etc.)
+        return windows.filter { window in
+            var role: CFTypeRef?
+            AXUIElementCopyAttributeValue(window, kAXRoleAttribute as CFString, &role)
+            guard let role = role as? String else { return false }
+            return role == kAXWindowRole
+
+        }
+    }
+
     // MARK: - Private
 
     private func getWindowPosition(_ window: AXUIElement) -> CGPoint? {

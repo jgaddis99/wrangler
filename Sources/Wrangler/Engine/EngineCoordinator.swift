@@ -206,6 +206,46 @@ final class EngineCoordinator: ObservableObject {
         windowManager.setWindowFrame(window, frame: frame)
     }
 
+    /// Tile all windows of the focused app evenly within the selected grid zone.
+    func batchTileWindows(in position: GridPosition, onDisplay displayID: UInt32, config: WranglerConfig) {
+        let windows = windowManager.getAllWindowsOfFocusedApp()
+        guard !windows.isEmpty else { return }
+
+        let displayConfig = config.displays.first { $0.displayID == displayID }
+        let columns = displayConfig?.columns ?? 4
+        let rows = displayConfig?.rows ?? 4
+        let gap = displayConfig?.gap ?? 0
+
+        guard let visibleFrame = displayDetector.visibleFrame(for: displayID) else { return }
+
+        // Calculate the full zone frame
+        let zoneFrame = GridCalculator.calculateFrame(
+            for: position, in: visibleFrame,
+            gridColumns: columns, gridRows: rows, gap: gap
+        )
+
+        let windowCount = windows.count
+        // Calculate how to subdivide: fill columns first, then wrap to rows
+        let tileCols = min(windowCount, max(1, position.columnSpan))
+        let tileRows = Int(ceil(Double(windowCount) / Double(tileCols)))
+
+        let tileWidth = zoneFrame.width / CGFloat(tileCols)
+        let tileHeight = zoneFrame.height / CGFloat(tileRows)
+
+        for (index, window) in windows.enumerated() {
+            let col = index % tileCols
+            let row = index / tileCols
+            let frame = CGRect(
+                x: zoneFrame.origin.x + CGFloat(col) * tileWidth,
+                y: zoneFrame.origin.y + CGFloat(row) * tileHeight,
+                width: tileWidth,
+                height: tileHeight
+            )
+            windowManager.setWindowFrame(window, frame: frame)
+        }
+        wranglerLog("Wrangler: Batch-tiled \(windowCount) windows into \(tileCols)x\(tileRows) grid")
+    }
+
     func snapFocusedWindowToPosition(_ position: GridPosition, onDisplay displayID: UInt32, config: WranglerConfig) {
         // Use the captured window if available (overlay steals AX focus), else get current
         let window: AXUIElement
@@ -309,6 +349,12 @@ extension EngineCoordinator: GridOverlayViewDelegate {
     func gridOverlayView(_ view: GridOverlayView, didSelectZone position: GridPosition, onDisplay displayID: UInt32) {
         guard let config = configManager?.config else { return }
         snapFocusedWindowToPosition(position, onDisplay: displayID, config: config)
+        hideOverlay()
+    }
+
+    func gridOverlayView(_ view: GridOverlayView, didBatchSelectZone position: GridPosition, onDisplay displayID: UInt32) {
+        guard let config = configManager?.config else { return }
+        batchTileWindows(in: position, onDisplay: displayID, config: config)
         hideOverlay()
     }
 
