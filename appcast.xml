@@ -14,24 +14,13 @@
             <description><![CDATA[
                 <h2>What's New in 0.1.2</h2>
                 <ul>
-                    <li>Cleaner Settings UI — removed disabled menu bar toggle</li>
-                    <li>About tab shows version only (no build number)</li>
+                    <li>Cleaner Settings UI</li>
+                    <li>Bug fixes and polish</li>
                 </ul>
             ]]></description>
             <enclosure url="https://github.com/jgaddis99/wrangler/releases/download/v0.1.2/Wrangler-0.1.2.dmg"
                        sparkle:edSignature="p3hH9HJVtKwE83ADqDA5ACy2929iHtEkGCREXqxOP3PzMhsV78x45Y7ByDZZT1zthjZ34J1ZGBtZoczWpmJ7DQ=="
                        length="2245803"
-                       type="application/octet-stream" />
-        </item>
-        <item>
-            <title>Version 0.1.1</title>
-            <pubDate>Sun, 19 Apr 2026 19:41:40 +0000</pubDate>
-            <sparkle:version>2</sparkle:version>
-            <sparkle:shortVersionString>0.1.1</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
-            <enclosure url="https://github.com/jgaddis99/wrangler/releases/download/v0.1.1/Wrangler-0.1.1.dmg"
-                       sparkle:edSignature="9J/8OQc9V4Tw5PreLy/IyzxPrqhP9I3hxMB51d7IDExE6x9bdjZcwNC0w+BmBNipO5/4oyq9RN9ZPnQG+qS1Dw=="
-                       length="2248817"
                        type="application/octet-stream" />
         </item>
     </channel>
