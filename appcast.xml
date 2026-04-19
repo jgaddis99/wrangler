@@ -2,8 +2,30 @@
 <rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" xmlns:dc="http://purl.org/dc/elements/1.1/">
     <channel>
         <title>Wrangler Updates</title>
-        <link>https://github.com/jasongaddis/wrangler/releases</link>
+        <link>https://github.com/jgaddis99/wrangler/releases</link>
         <description>Updates for Wrangler window manager</description>
         <language>en</language>
+        <item>
+            <title>Version 0.1.1</title>
+            <pubDate>Sun, 19 Apr 2026 19:41:40 +0000</pubDate>
+            <sparkle:version>2</sparkle:version>
+            <sparkle:shortVersionString>0.1.1</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <description><![CDATA[
+                <h2>What's New in 0.1.1</h2>
+                <ul>
+                    <li>Auto-tile all windows on current display (Ctrl+Alt+T)</li>
+                    <li>Undo last snap (Ctrl+Alt+Z)</li>
+                    <li>Snap-to-thirds for ultrawides (Ctrl+Alt+1/2/3)</li>
+                    <li>Grow windows by grid cell (Ctrl+Alt+Shift+Arrow)</li>
+                    <li>App pinning with one-key reset</li>
+                    <li>Custom app icon</li>
+                    <li>Settings UI improvements</li>
+                </ul>
+            ]]></description>
+            <enclosure url="https://github.com/jgaddis99/wrangler/releases/download/v0.1.1/Wrangler-0.1.1.dmg"
+                       length="2248751"
+                       type="application/octet-stream" />
+        </item>
     </channel>
 </rss>
