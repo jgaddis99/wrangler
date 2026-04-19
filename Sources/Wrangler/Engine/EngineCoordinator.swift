@@ -179,12 +179,22 @@ final class EngineCoordinator: ObservableObject {
         guard let zone = config.customZones.first(where: { $0.id == id }) else { return }
         guard case .success(let window) = windowManager.getFocusedWindow() else { return }
 
-        let displayConfig = config.displays.first { $0.displayID == zone.displayID }
+        // Fall back to display name if the stored displayID no longer matches
+        let targetDisplayID: UInt32
+        if displayDetector.displays.contains(where: { $0.id == zone.displayID }) {
+            targetDisplayID = zone.displayID
+        } else if let match = displayDetector.displays.first(where: { $0.name == zone.displayName }) {
+            targetDisplayID = match.id
+        } else {
+            return // Display not found
+        }
+
+        let displayConfig = config.displays.first { $0.displayID == targetDisplayID }
         let columns = displayConfig?.columns ?? 4
         let rows = displayConfig?.rows ?? 4
         let gap = displayConfig?.gap ?? 0
 
-        guard let visibleFrame = displayDetector.visibleFrame(for: zone.displayID) else { return }
+        guard let visibleFrame = displayDetector.visibleFrame(for: targetDisplayID) else { return }
 
         let frame = GridCalculator.calculateFrame(
             for: zone.gridPosition, in: visibleFrame,
@@ -245,13 +255,13 @@ final class EngineCoordinator: ObservableObject {
     func startDragDetection(configManager: ConfigManager) {
         guard configManager.config.general.autoShowOverlay else { return }
         dragDetector.start { [weak self] isDragging in
-            guard let self = self else { return }
+            guard let self = self, let cm = self.configManager else { return }
             if isDragging {
-                self.showOverlay(configManager: configManager)
+                self.showOverlay(configManager: cm)
             } else {
                 if self.overlayIsOpen {
                     // Give user a moment to interact with the overlay
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { [weak self] in
                         guard let self = self, self.overlayIsOpen else { return }
                         self.hideOverlay()
                     }
@@ -283,6 +293,7 @@ extension EngineCoordinator: GridOverlayViewDelegate {
             let zone = CustomZone(
                 name: name,
                 displayID: displayID,
+                displayName: displayName,
                 column: position.column,
                 row: position.row,
                 columnSpan: position.columnSpan,

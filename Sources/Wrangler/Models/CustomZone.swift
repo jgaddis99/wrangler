@@ -10,6 +10,7 @@ struct CustomZone: Codable, Identifiable, Equatable {
     let id: UUID
     var name: String
     var displayID: UInt32
+    var displayName: String
     var column: Int
     var row: Int
     var columnSpan: Int
@@ -20,6 +21,7 @@ struct CustomZone: Codable, Identifiable, Equatable {
         id: UUID = UUID(),
         name: String,
         displayID: UInt32,
+        displayName: String = "",
         column: Int,
         row: Int,
         columnSpan: Int,
@@ -29,6 +31,7 @@ struct CustomZone: Codable, Identifiable, Equatable {
         self.id = id
         self.name = name
         self.displayID = displayID
+        self.displayName = displayName
         self.column = column
         self.row = row
         self.columnSpan = max(1, columnSpan)

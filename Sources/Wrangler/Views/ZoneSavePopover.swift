@@ -39,7 +39,7 @@ final class ZoneSavePopover {
             }
         )
         panel.contentView = NSHostingView(rootView: view)
-        panel.center()
+        panel.setFrameOrigin(NSPoint(x: point.x - 150, y: point.y - 180))
         panel.makeKeyAndOrderFront(nil)
     }
 }

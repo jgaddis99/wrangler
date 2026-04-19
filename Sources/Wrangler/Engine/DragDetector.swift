@@ -70,10 +70,11 @@ final class DragDetector {
         var focusedWindow: CFTypeRef?
         AXUIElementCopyAttributeValue(appElement, kAXFocusedWindowAttribute as CFString, &focusedWindow)
 
-        let refcon = Unmanaged.passUnretained(self).toOpaque()
+        let refcon = Unmanaged.passRetained(self).toOpaque()
         if let window = focusedWindow {
-            AXObserverAddNotification(observer, window as! AXUIElement, kAXMovedNotification as CFString, refcon)
-            AXObserverAddNotification(observer, window as! AXUIElement, kAXResizedNotification as CFString, refcon)
+            let windowElement = unsafeBitCast(window, to: AXUIElement.self)
+            AXObserverAddNotification(observer, windowElement, kAXMovedNotification as CFString, refcon)
+            AXObserverAddNotification(observer, windowElement, kAXResizedNotification as CFString, refcon)
         }
 
         CFRunLoopAddSource(CFRunLoopGetMain(), AXObserverGetRunLoopSource(observer), .commonModes)
@@ -82,6 +83,8 @@ final class DragDetector {
     private func stopObserving() {
         if let observer = observer {
             CFRunLoopRemoveSource(CFRunLoopGetMain(), AXObserverGetRunLoopSource(observer), .commonModes)
+            // Balance the passRetained call in startObserving
+            Unmanaged.passUnretained(self).release()
         }
         observer = nil
         moveTimer?.invalidate()

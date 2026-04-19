@@ -42,11 +42,21 @@ final class GridOverlayPanel: NSPanel {
         setContentSize(panelSize)
     }
 
+    override var canBecomeKey: Bool { true }
+
+    override func keyDown(with event: NSEvent) {
+        if event.keyCode == 0x35 { // Escape
+            hideOverlay()
+        } else {
+            super.keyDown(with: event)
+        }
+    }
+
     func showOverlay() {
         overlayView.clearSelection()
         // ARCHITECT FIX: Do NOT call NSApp.activate() — it defeats non-activating panel behavior.
         // The panel should float without stealing focus from the window being managed.
-        orderFront(nil)
+        makeKeyAndOrderFront(nil)
     }
 
     func hideOverlay() {
