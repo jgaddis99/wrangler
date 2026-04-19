@@ -407,14 +407,14 @@ extension EngineCoordinator: GridOverlayViewDelegate {
             for: position, in: visibleFrame,
             gridColumns: columns, gridRows: rows, gap: gap
         )
-        snapPreview.showPreview(frame: frame)
+        snapPreview.showPreview(frame: frame, style: .zoneFill)
     }
 
     func gridOverlayView(_ view: GridOverlayView, hoveredDisplay displayID: UInt32?) {
         if let displayID = displayID {
-            // Show a highlight border around the entire real display
+            // Show a glowing border rim around the actual physical monitor
             guard let visibleFrame = displayDetector.visibleFrame(for: displayID) else { return }
-            snapPreview.showPreview(frame: visibleFrame)
+            snapPreview.showPreview(frame: visibleFrame, style: .monitorRim)
         } else {
             snapPreview.hidePreview()
         }
